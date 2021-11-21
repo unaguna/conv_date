@@ -1,4 +1,6 @@
-use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, Timelike, Utc};
+use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc};
+
+const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
 
 pub struct LeapUtc {
     // うるう秒によってずれるタイミング (UTC)
@@ -40,7 +42,14 @@ fn normalize_leap(datetime: &DateTime<Utc>) -> NaiveDateTime {
     ) + Duration::nanoseconds(datetime.nanosecond().into());
 }
 
-pub fn utc2tai(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTime, String> {
+pub fn utc2tai(datetime: &str, leaps: &[LeapUtc]) -> Result<String, String> {
+    Utc.datetime_from_str(datetime, DT_FMT)
+        .map_err(|err| err.to_string())
+        .and_then(|datetime| utc2tai_dt(&datetime, leaps))
+        .map(|tai| tai.format(DT_FMT).to_string())
+}
+
+pub fn utc2tai_dt(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTime, String> {
     let datetime_nm = normalize_leap(datetime);
 
     return pick_dominant_leap(datetime, leaps)
@@ -52,8 +61,6 @@ mod tests {
     use super::*;
     use chrono::TimeZone;
     use rstest::*;
-
-    const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.f";
 
     #[rstest]
     #[case("2017-01-02T11:22:33.000", "2017-01-02T11:23:10.000")]
@@ -76,9 +83,6 @@ mod tests {
     #[case("2019-12-31T23:59:57.000", "2020-01-01T00:00:35.000")]
     #[case("2020-01-01T00:00:00.000", "2020-01-01T00:00:36.000")]
     fn test_utc2tai(#[case] utc: &str, #[case] expected_tai: &str) {
-        let utc = Utc.datetime_from_str(utc, DT_FMT).unwrap();
-        let expected_tai = NaiveDateTime::parse_from_str(expected_tai, DT_FMT).unwrap();
-
         let leaps = vec![
             LeapUtc {
                 datetime: Utc.ymd(2015, 7, 1).and_hms(0, 0, 0),
