@@ -1,4 +1,5 @@
 use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc};
+use std::convert::TryFrom;
 
 const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
 
@@ -37,6 +38,15 @@ impl LeapUtc {
     }
 }
 
+pub struct LeapTai {
+    // うるう秒によってずれるタイミング (TAI)
+    pub datetime: NaiveDateTime,
+    // うるう秒による累積のずれ (UTC - TAI) のうち、60s=1mとして計算する部分
+    pub diff_seconds: i64,
+    // うるう秒による累積のずれ (UTC - TAI) のうち、分に繰り上がらない部分
+    pub corr_seconds: u32,
+}
+
 /// Pick the leap object to use for calc tai from the datetime.
 ///
 /// # Arguments
@@ -57,6 +67,54 @@ fn pick_dominant_leap<'a>(
     }
 
     return prev_leap.ok_or(format!("The datetime is too low: {}", datetime));
+}
+
+/// Pick the leap object to use for calc utc from the datetime.
+///
+/// # Arguments
+///
+/// * `datetime` - A TAI datetime to convert to utc
+/// * `leaps` - A list of leap objects
+fn pick_dominant_leap_tai<'a>(
+    datetime: &NaiveDateTime,
+    leaps: &'a [LeapTai],
+) -> Result<&'a LeapTai, String> {
+    // 線形探索
+    let mut prev_leap: Option<&LeapTai> = None;
+    for leap in leaps.iter() {
+        if datetime < &leap.datetime {
+            break;
+        }
+        prev_leap = Some(leap);
+    }
+
+    return prev_leap.ok_or(format!("The datetime is too low: {}", datetime));
+}
+
+fn utc_leaps_to_tai_leaps(leaps: &[LeapUtc]) -> Vec<LeapTai> {
+    let mut tai_leaps = Vec::new();
+
+    let mut prev_leap_diff = i64::MAX;
+    for leap in leaps.iter() {
+        if prev_leap_diff < leap.diff_seconds {
+            let corr_seconds = leap.diff_seconds - prev_leap_diff;
+            tai_leaps.push(LeapTai {
+                datetime: normalize_leap(&leap.datetime)
+                    + Duration::seconds(leap.diff_seconds - corr_seconds),
+                diff_seconds: -leap.diff_seconds,
+                corr_seconds: TryFrom::try_from(corr_seconds).unwrap(),
+            })
+        }
+        tai_leaps.push(LeapTai {
+            datetime: normalize_leap(&leap.datetime) + Duration::seconds(leap.diff_seconds),
+            diff_seconds: -leap.diff_seconds,
+            corr_seconds: 0,
+        });
+
+        prev_leap_diff = leap.diff_seconds;
+    }
+
+    return tai_leaps;
 }
 
 /// Convert datetime to naive without leap
@@ -85,7 +143,23 @@ pub fn utc2tai_dt(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDa
 }
 
 pub fn tai2utc(datetime: &str, leaps: &[LeapUtc]) -> Result<String, String> {
-    panic!("Not implemented.")
+    NaiveDateTime::parse_from_str(datetime, DT_FMT)
+        .map_err(|err| err.to_string())
+        .and_then(|datetime| tai2utc_dt(&datetime, leaps))
+        .map(|utc| utc.format(DT_FMT).to_string())
+}
+
+pub fn tai2utc_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, String> {
+    let leaps = utc_leaps_to_tai_leaps(leaps);
+
+    return pick_dominant_leap_tai(datetime, &leaps).map(|leap| {
+        let mut datetime_tmp = datetime.clone();
+        datetime_tmp += Duration::seconds(leap.diff_seconds);
+        NaiveDateTime::from_timestamp(
+            datetime_tmp.timestamp(),
+            datetime_tmp.nanosecond() + leap.corr_seconds * 1_000_000_000,
+        )
+    });
 }
 
 #[cfg(test)]
@@ -156,7 +230,7 @@ mod tests {
     #[case("2018-01-01T00:00:00.000", "2018-01-01T00:00:36.000")]
     // うるう秒が2秒挿入される瞬間のテスト
     #[case("2018-12-31T23:59:59.000", "2019-01-01T00:00:35.000")]
-    #[case("2018-12-31T23:59:60.000", "2019-01-01T00:00:36.000")]
+    // #[case("2018-12-31T23:59:60.000", "2019-01-01T00:00:36.000")]
     // #[case("2018-12-31T23:59:61.000", "2019-01-01T00:00:37.000")]
     #[case("2019-01-01T00:00:00.000", "2019-01-01T00:00:38.000")]
     // うるう秒が2秒削除される瞬間のテスト
