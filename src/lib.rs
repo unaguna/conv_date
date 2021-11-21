@@ -7,7 +7,7 @@ pub struct LeapUtc {
     diff_seconds: i32,
 }
 
-pub fn utc2tai(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> NaiveDateTime {
+pub fn utc2tai(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTime, String> {
     panic!("Not implemented.")
 }
 
@@ -18,7 +18,7 @@ fn it_works() {
         datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0),
         diff_seconds: 37,
     }];
-    let tai = utc2tai(&utc, &leaps);
+    let tai = utc2tai(&utc, &leaps).unwrap();
 
     assert_eq!(tai.year(), 2017);
     assert_eq!(tai.month(), 1);
