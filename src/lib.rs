@@ -31,9 +31,22 @@ fn pick_dominant_leap<'a>(
     return prev_leap.ok_or(format!("The datetime is too low: {}", datetime));
 }
 
+/// Convert datetime to naive without leap
+///
+/// Nanoseconds that exceed 1000000 to represent leap seconds are added to seconds.
+fn normalize_leap(datetime: &DateTime<Utc>) -> NaiveDateTime {
+    return NaiveDate::from_ymd(datetime.year(), datetime.month(), datetime.day()).and_hms(
+        datetime.hour(),
+        datetime.minute(),
+        datetime.second(),
+    ) + Duration::nanoseconds(datetime.nanosecond().into());
+}
+
 pub fn utc2tai(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTime, String> {
+    let datetime_nm = normalize_leap(datetime);
+
     return pick_dominant_leap(datetime, leaps)
-        .map(|leap| datetime.naive_utc() + Duration::seconds(leap.diff_seconds));
+        .map(|leap| datetime_nm + Duration::seconds(leap.diff_seconds));
 }
 
 #[cfg(test)]
