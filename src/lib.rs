@@ -9,6 +9,34 @@ pub struct LeapUtc {
     pub diff_seconds: i64,
 }
 
+impl LeapUtc {
+    pub fn from_line(line: &str, sep: &str, fmt: &str) -> Result<LeapUtc, String> {
+        let parts: Vec<&str> = line.splitn(3, sep).collect();
+        if parts.len() != 2 {
+            return Err(format!("Illegal leap definition (block size): {}", line));
+        }
+        let datetime = Utc.datetime_from_str(parts[0], fmt);
+        let datetime = match datetime {
+            Ok(datetime) => datetime,
+            Err(_e) => {
+                return Err(format!(
+                    "Illegal leap definition (datetime format): {}",
+                    line
+                ))
+            }
+        };
+        let diff_seconds: Result<i64, _> = parts[1].parse();
+        let diff_seconds = match diff_seconds {
+            Ok(diff_seconds) => diff_seconds,
+            Err(_e) => return Err(format!("Illegal leap definition (delta seconds): {}", line)),
+        };
+        Ok(LeapUtc {
+            datetime,
+            diff_seconds,
+        })
+    }
+}
+
 /// Pick the leap object to use for calc tai from the datetime.
 ///
 /// # Arguments
