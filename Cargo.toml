@@ -9,6 +9,10 @@ edition = "2018"
 name = "utc2tai"
 path = "src/utc2tai/main.rs"
 
+[[bin]]
+name = "tai2utc"
+path = "src/tai2utc/main.rs"
+
 [dependencies]
 chrono = "0.4.19"
 
