@@ -28,6 +28,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "conv_date"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "rstest",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -81,14 +89,6 @@ dependencies = [
  "quote",
  "rustc_version",
  "syn",
-]
-
-[[package]]
-name = "rust-date"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "rstest",
 ]
 
 [[package]]
