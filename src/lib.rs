@@ -1,4 +1,4 @@
-use chrono::{Date, Datelike, DateTime, NaiveDate, NaiveDateTime, Timelike, TimeZone, Utc};
+use chrono::{Date, DateTime, Datelike, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc};
 
 pub struct LeapUtc {
     // うるう秒によってずれるタイミング (UTC)
@@ -8,13 +8,16 @@ pub struct LeapUtc {
 }
 
 pub fn utc2tai(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> NaiveDateTime {
-    panic!()
+    panic!("Not implemented.")
 }
 
 #[test]
 fn it_works() {
     let utc = Utc.ymd(2017, 1, 2).and_hms(11, 22, 33);
-    let leaps = vec![LeapUtc { datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0), diff_seconds: 37 }];
+    let leaps = vec![LeapUtc {
+        datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0),
+        diff_seconds: 37,
+    }];
     let tai = utc2tai(&utc, &leaps);
 
     assert_eq!(tai.year(), 2017);
