@@ -1,6 +1,4 @@
-use chrono::{
-    Date, DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc,
-};
+use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, Timelike, Utc};
 
 pub struct LeapUtc {
     // うるう秒によってずれるタイミング (UTC)
@@ -52,6 +50,7 @@ pub fn utc2tai(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateT
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::TimeZone;
     use rstest::*;
 
     const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.f";
