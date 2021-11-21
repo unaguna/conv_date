@@ -39,22 +39,33 @@ pub fn utc2tai(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateT
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::*;
 
-    #[test]
-    fn it_works() {
-        let utc = Utc.ymd(2017, 1, 2).and_hms(11, 22, 33);
-        let leaps = vec![LeapUtc {
-            datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0),
-            diff_seconds: 37,
-        }];
+    const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.f";
+
+    #[rstest]
+    #[case("2016-12-31T23:59:59.000", "2017-01-01T00:00:35.000")]
+    #[case("2016-12-31T23:59:60.000", "2017-01-01T00:00:36.000")]
+    #[case("2016-12-31T23:59:60.123", "2017-01-01T00:00:36.123")]
+    #[case("2017-01-01T00:00:00.000", "2017-01-01T00:00:37.000")]
+    #[case("2017-01-02T11:22:33.000", "2017-01-02T11:23:10.000")]
+    #[case("2017-01-02T11:22:33.123", "2017-01-02T11:23:10.123")]
+    fn it_works(#[case] utc: &str, #[case] expected_tai: &str) {
+        let utc = Utc.datetime_from_str(utc, DT_FMT).unwrap();
+        let expected_tai = NaiveDateTime::parse_from_str(expected_tai, DT_FMT).unwrap();
+
+        let leaps = vec![
+            LeapUtc {
+                datetime: Utc.ymd(2015, 7, 1).and_hms(0, 0, 0),
+                diff_seconds: 36,
+            },
+            LeapUtc {
+                datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0),
+                diff_seconds: 37,
+            },
+        ];
         let tai = utc2tai(&utc, &leaps).unwrap();
 
-        assert_eq!(tai.year(), 2017);
-        assert_eq!(tai.month(), 1);
-        assert_eq!(tai.day(), 2);
-        assert_eq!(tai.hour(), 11);
-        assert_eq!(tai.minute(), 23);
-        assert_eq!(tai.second(), 10);
-        assert_eq!(tai.nanosecond(), 0);
+        assert_eq!(tai, expected_tai);
     }
 }
