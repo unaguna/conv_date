@@ -36,20 +36,25 @@ pub fn utc2tai(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateT
         .map(|leap| datetime.naive_utc() + Duration::seconds(leap.diff_seconds));
 }
 
-#[test]
-fn it_works() {
-    let utc = Utc.ymd(2017, 1, 2).and_hms(11, 22, 33);
-    let leaps = vec![LeapUtc {
-        datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0),
-        diff_seconds: 37,
-    }];
-    let tai = utc2tai(&utc, &leaps).unwrap();
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    assert_eq!(tai.year(), 2017);
-    assert_eq!(tai.month(), 1);
-    assert_eq!(tai.day(), 2);
-    assert_eq!(tai.hour(), 11);
-    assert_eq!(tai.minute(), 23);
-    assert_eq!(tai.second(), 10);
-    assert_eq!(tai.nanosecond(), 0);
+    #[test]
+    fn it_works() {
+        let utc = Utc.ymd(2017, 1, 2).and_hms(11, 22, 33);
+        let leaps = vec![LeapUtc {
+            datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0),
+            diff_seconds: 37,
+        }];
+        let tai = utc2tai(&utc, &leaps).unwrap();
+
+        assert_eq!(tai.year(), 2017);
+        assert_eq!(tai.month(), 1);
+        assert_eq!(tai.day(), 2);
+        assert_eq!(tai.hour(), 11);
+        assert_eq!(tai.minute(), 23);
+        assert_eq!(tai.second(), 10);
+        assert_eq!(tai.nanosecond(), 0);
+    }
 }
