@@ -1,14 +1,39 @@
-use chrono::{Date, DateTime, Datelike, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc};
+use chrono::{
+    Date, DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc,
+};
 
 pub struct LeapUtc {
     // うるう秒によってずれるタイミング (UTC)
     datetime: DateTime<Utc>,
     // うるう秒による累積のずれ (TAI - UTC)
-    diff_seconds: i32,
+    diff_seconds: i64,
+}
+
+/// Pick the leap object to use for calc tai from the datetime.
+///
+/// # Arguments
+///
+/// * `datetime` - A datetime to convert to tai
+/// * `leaps` - A list of leap objects
+fn pick_dominant_leap<'a>(
+    datetime: &DateTime<Utc>,
+    leaps: &'a [LeapUtc],
+) -> Result<&'a LeapUtc, String> {
+    // 線形探索
+    let mut prev_leap: Option<&LeapUtc> = None;
+    for leap in leaps.iter() {
+        if datetime < &leap.datetime {
+            break;
+        }
+        prev_leap = Some(leap);
+    }
+
+    return prev_leap.ok_or(format!("The datetime is too low: {}", datetime));
 }
 
 pub fn utc2tai(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTime, String> {
-    panic!("Not implemented.")
+    return pick_dominant_leap(datetime, leaps)
+        .map(|leap| datetime.naive_utc() + Duration::seconds(leap.diff_seconds));
 }
 
 #[test]
