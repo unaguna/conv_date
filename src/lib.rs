@@ -4,9 +4,9 @@ const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
 
 pub struct LeapUtc {
     // うるう秒によってずれるタイミング (UTC)
-    datetime: DateTime<Utc>,
+    pub datetime: DateTime<Utc>,
     // うるう秒による累積のずれ (TAI - UTC)
-    diff_seconds: i64,
+    pub diff_seconds: i64,
 }
 
 /// Pick the leap object to use for calc tai from the datetime.
