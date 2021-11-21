@@ -84,6 +84,10 @@ pub fn utc2tai_dt(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDa
         .map(|leap| datetime_nm + Duration::seconds(leap.diff_seconds));
 }
 
+pub fn tai2utc(datetime: &str, leaps: &[LeapUtc]) -> Result<String, String> {
+    panic!("Not implemented.")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -136,5 +140,53 @@ mod tests {
         let tai = utc2tai(&utc, &leaps).unwrap();
 
         assert_eq!(tai, expected_tai);
+    }
+
+    #[rstest]
+    #[case("2017-01-02T11:22:33.000", "2017-01-02T11:23:10.000")]
+    #[case("2017-01-02T11:22:33.123", "2017-01-02T11:23:10.123")]
+    // うるう秒が挿入される瞬間のテスト
+    #[case("2016-12-31T23:59:59.000", "2017-01-01T00:00:35.000")]
+    #[case("2016-12-31T23:59:60.000", "2017-01-01T00:00:36.000")]
+    #[case("2016-12-31T23:59:60.123", "2017-01-01T00:00:36.123")]
+    #[case("2017-01-01T00:00:00.000", "2017-01-01T00:00:37.000")]
+    // うるう秒が削除される瞬間のテスト
+    #[case("2017-12-31T23:59:58.000", "2018-01-01T00:00:35.000")]
+    #[case("2017-12-31T23:59:58.123", "2018-01-01T00:00:35.123")]
+    #[case("2018-01-01T00:00:00.000", "2018-01-01T00:00:36.000")]
+    // うるう秒が2秒挿入される瞬間のテスト
+    #[case("2018-12-31T23:59:59.000", "2019-01-01T00:00:35.000")]
+    #[case("2018-12-31T23:59:60.000", "2019-01-01T00:00:36.000")]
+    // #[case("2018-12-31T23:59:61.000", "2019-01-01T00:00:37.000")]
+    #[case("2019-01-01T00:00:00.000", "2019-01-01T00:00:38.000")]
+    // うるう秒が2秒削除される瞬間のテスト
+    #[case("2019-12-31T23:59:57.000", "2020-01-01T00:00:35.000")]
+    #[case("2020-01-01T00:00:00.000", "2020-01-01T00:00:36.000")]
+    fn test_tai2utc(#[case] expected_utc: &str, #[case] tai: &str) {
+        let leaps = vec![
+            LeapUtc {
+                datetime: Utc.ymd(2015, 7, 1).and_hms(0, 0, 0),
+                diff_seconds: 36,
+            },
+            LeapUtc {
+                datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0),
+                diff_seconds: 37,
+            },
+            LeapUtc {
+                datetime: Utc.ymd(2018, 1, 1).and_hms(0, 0, 0),
+                diff_seconds: 36,
+            },
+            LeapUtc {
+                datetime: Utc.ymd(2019, 1, 1).and_hms(0, 0, 0),
+                diff_seconds: 38,
+            },
+            LeapUtc {
+                datetime: Utc.ymd(2020, 1, 1).and_hms(0, 0, 0),
+                diff_seconds: 36,
+            },
+        ];
+        let utc = tai2utc(&tai, &leaps).unwrap();
+
+        assert_eq!(utc, expected_utc);
     }
 }
