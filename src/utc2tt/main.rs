@@ -1,11 +1,15 @@
+use clap::{App, Arg};
 use conv_date::{exe, tai2tt, utc2tai};
-use std::env;
 
 fn main() {
     // Analize the arguments
-    // TODO: error checking
-    let args: Vec<String> = env::args().collect();
-    let in_utc = &args[1];
+    let app = App::new("utc2tt").arg(
+        Arg::with_name("datetime")
+            .help("datetime to convert")
+            .required(true),
+    );
+    let matches = app.get_matches();
+    let in_utc = matches.value_of("datetime").unwrap();
 
     // load leap list
     let leaps = exe::get_leaps_path()

@@ -23,6 +23,7 @@ path = "src/utc2tt/main.rs"
 
 [dependencies]
 chrono = "0.4.19"
+clap = "2.33.3"
 
 [dev-dependencies]
 rstest = "0.11.0"
