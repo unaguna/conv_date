@@ -6,20 +6,29 @@ use std::path::PathBuf;
 
 const LEAPS_TABLE_FILENAME: &str = "leaps.txt";
 
-pub fn get_leaps_path() -> Result<PathBuf, std::io::Error> {
+pub fn get_leaps_path() -> Result<PathBuf, String> {
     let mut exe_path = match env::current_exe() {
         Ok(exe_path) => exe_path,
-        Err(e) => return Err(e),
+        Err(e) => return Err(e.to_string()),
     };
     exe_path.pop();
     exe_path.push(LEAPS_TABLE_FILENAME);
     return Ok(exe_path);
 }
 
-pub fn load_leaps(leaps_file: &PathBuf) -> Result<Vec<LeapUtc>, std::io::Error> {
-    let leaps: Vec<_> = BufReader::new(File::open(leaps_file).unwrap())
+pub fn load_leaps(leaps_file: &PathBuf) -> Result<Vec<LeapUtc>, String> {
+    let leaps_file = File::open(leaps_file);
+    let leaps_file = match leaps_file {
+        Ok(leaps_file) => leaps_file,
+        Err(err) => return Err(err.to_string()),
+    };
+
+    let leaps: Result<Vec<_>, _> = BufReader::new(leaps_file)
         .lines()
-        .map(|line| LeapUtc::from_line(&line.unwrap(), " ", DT_FMT).unwrap())
+        .map(|line| match line {
+            Ok(line) => LeapUtc::from_line(&line, " ", DT_FMT),
+            Err(err) => Err(err.to_string()),
+        })
         .collect();
-    Ok(leaps)
+    leaps
 }
