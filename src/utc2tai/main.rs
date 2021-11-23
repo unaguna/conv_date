@@ -1,4 +1,4 @@
-use conv_date::{utc2tai, LeapUtc};
+use conv_date::{exe, utc2tai, LeapUtc};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -11,7 +11,9 @@ fn main() {
     // TODO: error checking
     let args: Vec<String> = env::args().collect();
     let in_utc = &args[1];
-    let leaps_file = &args[2];
+
+    // TODO: output stderr
+    let leaps_file = exe::get_leaps_path().unwrap();
 
     // load leap list
     let leaps: Vec<_> = BufReader::new(File::open(leaps_file).unwrap())
