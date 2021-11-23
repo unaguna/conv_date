@@ -1,4 +1,4 @@
-use crate::{normalize_leap, LeapUtc, DT_FMT};
+use crate::{normalize_leap, LeapUtc};
 use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
 
 /// Pick the leap object to use for calc tai from the datetime.
@@ -23,11 +23,11 @@ fn pick_dominant_leap<'a>(
     return prev_leap.ok_or(format!("The datetime is too low: {}", datetime));
 }
 
-pub fn utc2tai(datetime: &str, leaps: &[LeapUtc]) -> Result<String, String> {
-    Utc.datetime_from_str(datetime, DT_FMT)
+pub fn utc2tai(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String, String> {
+    Utc.datetime_from_str(datetime, dt_fmt)
         .map_err(|err| err.to_string())
         .and_then(|datetime| utc2tai_dt(&datetime, leaps))
-        .map(|tai| tai.format(DT_FMT).to_string())
+        .map(|tai| tai.format(dt_fmt).to_string())
 }
 
 fn utc2tai_dt(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTime, String> {
@@ -42,6 +42,8 @@ mod tests {
     use super::*;
     use chrono::{TimeZone, Utc};
     use rstest::*;
+
+    const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
 
     #[rstest]
     #[case("2017-01-02T11:22:33.000", "2017-01-02T11:23:10.000")]
@@ -86,7 +88,7 @@ mod tests {
                 diff_seconds: 36,
             },
         ];
-        let tai = utc2tai(&utc, &leaps).unwrap();
+        let tai = utc2tai(&utc, &leaps, DT_FMT).unwrap();
 
         assert_eq!(tai, expected_tai);
     }
