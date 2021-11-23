@@ -3,7 +3,7 @@ mod tt;
 mod utc2tai;
 use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc};
 pub use tai2utc::tai2utc;
-pub use tt::tt2tai;
+pub use tt::{tai2tt, tt2tai};
 pub use utc2tai::utc2tai;
 
 const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
