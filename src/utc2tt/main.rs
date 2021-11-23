@@ -6,7 +6,7 @@ fn main() {
 
     // load leap list
     let leaps = exe::get_leaps_path()
-        .and_then(|p| exe::load_leaps(&p))
+        .and_then(|p| exe::load_leaps(&p, args.get_leaps_dt_fmt()))
         .unwrap();
 
     // calc TT
