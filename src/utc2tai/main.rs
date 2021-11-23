@@ -1,9 +1,4 @@
-use conv_date::{utc2tai, LeapUtc};
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-
-const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S";
-
+use conv_date::{exe, utc2tai};
 use std::env;
 
 fn main() {
@@ -11,13 +6,11 @@ fn main() {
     // TODO: error checking
     let args: Vec<String> = env::args().collect();
     let in_utc = &args[1];
-    let leaps_file = &args[2];
 
     // load leap list
-    let leaps: Vec<_> = BufReader::new(File::open(leaps_file).unwrap())
-        .lines()
-        .map(|line| LeapUtc::from_line(&line.unwrap(), " ", DT_FMT).unwrap())
-        .collect();
+    let leaps = exe::get_leaps_path()
+        .and_then(|p| exe::load_leaps(&p))
+        .unwrap();
     let tai = utc2tai(in_utc, &leaps).unwrap();
 
     println!("{}", tai)
