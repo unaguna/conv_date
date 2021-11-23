@@ -36,6 +36,7 @@ pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUt
 
 pub struct Arguments<'a> {
     matches: ArgMatches<'a>,
+    dt_fmt: String,
     leaps_dt_fmt: String,
 }
 
@@ -49,6 +50,12 @@ impl Arguments<'_> {
                     .long("leaps-dt-fmt"),
             )
             .arg(
+                Arg::with_name("dt_fmt")
+                    .help("format of <datetime>")
+                    .takes_value(true)
+                    .long("dt-fmt"),
+            )
+            .arg(
                 Arg::with_name("datetime")
                     .help("datetime to convert")
                     .multiple(true)
@@ -56,6 +63,7 @@ impl Arguments<'_> {
             );
         let matches: ArgMatches<'a> = app.get_matches();
         return Arguments {
+            dt_fmt: Arguments::decide_dt_fmt(&matches),
             leaps_dt_fmt: Arguments::decide_leaps_dt_fmt(&matches),
             matches,
         };
@@ -65,8 +73,21 @@ impl Arguments<'_> {
         return self.matches.values_of("datetime").unwrap();
     }
 
+    pub fn get_dt_fmt(&self) -> &str {
+        return &self.dt_fmt;
+    }
+
     pub fn get_leaps_dt_fmt(&self) -> &str {
         return &self.leaps_dt_fmt;
+    }
+
+    fn decide_dt_fmt(matches: &ArgMatches) -> String {
+        let s: String = matches
+            .value_of("dt_fmt")
+            .map(|s| s.to_string())
+            .or(env::var("DT_FMT").ok())
+            .unwrap_or(DT_FMT.to_string());
+        return s;
     }
 
     fn decide_leaps_dt_fmt(matches: &ArgMatches) -> String {

@@ -11,8 +11,8 @@ fn main() {
 
     // calc TT
     for in_utc in args.get_datetimes() {
-        let tt = utc2tai(in_utc, &leaps)
-            .and_then(|tai| tai2tt(&tai))
+        let tt = utc2tai(in_utc, &leaps, args.get_dt_fmt())
+            .and_then(|tai| tai2tt(&tai, args.get_dt_fmt()))
             .unwrap();
 
         println!("{}", tt)

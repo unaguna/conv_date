@@ -1,4 +1,4 @@
-use crate::{normalize_leap, LeapUtc, DT_FMT};
+use crate::{normalize_leap, LeapUtc};
 use chrono::{Duration, NaiveDateTime, Timelike};
 use std::convert::TryFrom;
 
@@ -55,11 +55,11 @@ fn utc_leaps_to_tai_leaps(leaps: &[LeapUtc]) -> Vec<LeapTai> {
     return tai_leaps;
 }
 
-pub fn tai2utc(datetime: &str, leaps: &[LeapUtc]) -> Result<String, String> {
-    NaiveDateTime::parse_from_str(datetime, DT_FMT)
+pub fn tai2utc(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String, String> {
+    NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|err| err.to_string())
         .and_then(|datetime| tai2utc_dt(&datetime, leaps))
-        .map(|utc| utc.format(DT_FMT).to_string())
+        .map(|utc| utc.format(dt_fmt).to_string())
 }
 
 fn tai2utc_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, String> {
@@ -79,6 +79,8 @@ mod tests {
     use super::*;
     use chrono::{TimeZone, Utc};
     use rstest::*;
+
+    const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
 
     #[rstest]
     #[case("2017-01-02T11:22:33.000", "2017-01-02T11:23:10.000")]
@@ -123,7 +125,7 @@ mod tests {
                 diff_seconds: 36,
             },
         ];
-        let utc = tai2utc(&tai, &leaps).unwrap();
+        let utc = tai2utc(&tai, &leaps, DT_FMT).unwrap();
 
         assert_eq!(utc, expected_utc);
     }
