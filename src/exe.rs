@@ -56,6 +56,12 @@ impl Arguments<'_> {
                     .long("dt-fmt"),
             )
             .arg(
+                Arg::with_name("io_pair_flg")
+                    .help("If it is specified, input datetime is also output to stdin.")
+                    .short("H")
+                    .long("io-pair"),
+            )
+            .arg(
                 Arg::with_name("datetime")
                     .help("datetime to convert")
                     .multiple(true)
@@ -97,5 +103,9 @@ impl Arguments<'_> {
             .or(env::var("LEAPS_DT_FMT").ok())
             .unwrap_or(DT_FMT.to_string());
         return s;
+    }
+
+    pub fn io_pair_flg(&self) -> bool {
+        return self.matches.is_present("io_pair_flg");
     }
 }

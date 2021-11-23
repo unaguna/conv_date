@@ -9,10 +9,15 @@ fn main() {
         .and_then(|p| exe::load_leaps(&p, args.get_leaps_dt_fmt()))
         .unwrap();
 
+    let print_line = match args.io_pair_flg() {
+        false => |_: &str, o: &str| println!("{}", o),
+        true => |i: &str, o: &str| println!("{} {}", i, o),
+    };
+
     // calc UTC
     for in_tt in args.get_datetimes() {
         let utc = tai2utc(in_tt, &leaps, args.get_dt_fmt()).unwrap();
 
-        println!("{}", utc)
+        print_line(in_tt, &utc);
     }
 }
