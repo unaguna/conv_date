@@ -1,4 +1,5 @@
 use crate::{LeapUtc, DT_FMT};
+use clap::{App, Arg, ArgMatches, Values};
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -31,4 +32,24 @@ pub fn load_leaps(leaps_file: &PathBuf) -> Result<Vec<LeapUtc>, String> {
         })
         .collect();
     leaps
+}
+
+pub struct Arguments<'a> {
+    matches: ArgMatches<'a>,
+}
+
+impl Arguments<'_> {
+    pub fn new<'a>(app_name: &str) -> Arguments<'a> {
+        let app: App<'a, 'a> = App::new(app_name).arg(
+            Arg::with_name("datetime")
+                .help("datetime to convert")
+                .multiple(true)
+                .required(true),
+        );
+        let matches: ArgMatches<'a> = app.get_matches();
+        return Arguments { matches };
+    }
+    pub fn get_datetimes(&self) -> Values {
+        return self.matches.values_of("datetime").unwrap();
+    }
 }
