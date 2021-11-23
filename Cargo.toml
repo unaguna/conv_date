@@ -13,6 +13,14 @@ path = "src/utc2tai/main.rs"
 name = "tai2utc"
 path = "src/tai2utc/main.rs"
 
+[[bin]]
+name = "tt2utc"
+path = "src/tt2utc/main.rs"
+
+[[bin]]
+name = "utc2tt"
+path = "src/utc2tt/main.rs"
+
 [dependencies]
 chrono = "0.4.19"
 
