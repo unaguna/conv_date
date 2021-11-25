@@ -15,11 +15,23 @@ fn main() {
     };
 
     // calc TT
+    let mut someone_is_err = false;
     for in_utc in args.get_datetimes() {
         let tt = utc2tai(in_utc, &leaps, args.get_dt_fmt())
-            .and_then(|tai| tai2tt(&tai, args.get_dt_fmt()))
-            .unwrap();
+            .and_then(|tai| tai2tt(&tai, args.get_dt_fmt()));
 
-        print_line(in_utc, &tt);
+        match tt {
+            Err(e) => {
+                someone_is_err = true;
+                eprintln!("{}", e)
+            }
+            Ok(tt) => print_line(in_utc, &tt),
+        }
     }
+
+    std::process::exit(if someone_is_err {
+        exe::EXIT_CODE_SOME_DT_NOT_CONVERTED
+    } else {
+        exe::EXIT_CODE_OK
+    });
 }

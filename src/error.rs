@@ -6,4 +6,6 @@ pub enum Error {
     LeapTableDatetimeParseError(String),
     #[error("The datetime is too low: {0}")]
     DatetimeTooLowError(String),
+    #[error("Unparseable datetime: {0}")]
+    DatetimeParseError(String),
 }

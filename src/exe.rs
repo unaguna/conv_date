@@ -7,6 +7,8 @@ use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
 const LEAPS_TABLE_FILENAME: &str = "leaps.txt";
+pub const EXIT_CODE_OK: i32 = 0;
+pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
 
 pub fn get_leaps_path() -> Result<PathBuf> {
     let mut exe_path = env::current_exe()?;

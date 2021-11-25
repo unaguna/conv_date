@@ -57,7 +57,8 @@ fn utc_leaps_to_tai_leaps(leaps: &[LeapUtc]) -> Vec<LeapTai> {
 }
 
 pub fn tai2utc(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String> {
-    let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)?;
+    let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
+        .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
     let utc = tai2utc_dt(&datetime, leaps)?;
     Ok(utc.format(dt_fmt).to_string())
 }

@@ -15,9 +15,22 @@ fn main() {
     };
 
     // calc TAI
+    let mut someone_is_err = false;
     for in_utc in args.get_datetimes() {
-        let tai = utc2tai(in_utc, &leaps, args.get_dt_fmt()).unwrap();
+        let tai = utc2tai(in_utc, &leaps, args.get_dt_fmt());
 
-        print_line(in_utc, &tai);
+        match tai {
+            Err(e) => {
+                someone_is_err = true;
+                eprintln!("{}", e)
+            }
+            Ok(tai) => print_line(in_utc, &tai),
+        }
     }
+
+    std::process::exit(if someone_is_err {
+        exe::EXIT_CODE_SOME_DT_NOT_CONVERTED
+    } else {
+        exe::EXIT_CODE_OK
+    });
 }

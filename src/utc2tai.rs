@@ -24,7 +24,9 @@ fn pick_dominant_leap<'a>(datetime: &DateTime<Utc>, leaps: &'a [LeapUtc]) -> Res
 }
 
 pub fn utc2tai(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String> {
-    let datetime = Utc.datetime_from_str(datetime, dt_fmt)?;
+    let datetime = Utc
+        .datetime_from_str(datetime, dt_fmt)
+        .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
     let tai = utc2tai_dt(&datetime, leaps)?;
     Ok(tai.format(dt_fmt).to_string())
 }
