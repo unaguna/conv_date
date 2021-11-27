@@ -7,7 +7,10 @@ fn main() {
     // load leap list
     let leaps = exe::get_leaps_path()
         .and_then(|p| exe::load_leaps(&p, args.get_leaps_dt_fmt()))
-        .unwrap();
+        .unwrap_or_else(|e| {
+            exe::print_err(&e);
+            std::process::exit(exe::EXIT_CODE_NG)
+        });
 
     let print_line = match args.io_pair_flg() {
         false => |_: &str, o: &str| println!("{}", o),
@@ -15,9 +18,22 @@ fn main() {
     };
 
     // calc UTC
+    let mut someone_is_err = false;
     for in_tt in args.get_datetimes() {
-        let utc = tai2utc(in_tt, &leaps, args.get_dt_fmt()).unwrap();
+        let utc = tai2utc(in_tt, &leaps, args.get_dt_fmt());
 
-        print_line(in_tt, &utc);
+        match utc {
+            Err(e) => {
+                someone_is_err = true;
+                exe::print_err(&e)
+            }
+            Ok(utc) => print_line(in_tt, &utc),
+        }
     }
+
+    std::process::exit(if someone_is_err {
+        exe::EXIT_CODE_SOME_DT_NOT_CONVERTED
+    } else {
+        exe::EXIT_CODE_OK
+    });
 }

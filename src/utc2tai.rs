@@ -1,4 +1,5 @@
-use crate::{normalize_leap, LeapUtc};
+use crate::{error::Error, normalize_leap, LeapUtc};
+use anyhow::Result;
 use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
 
 /// Pick the leap object to use for calc tai from the datetime.
@@ -10,7 +11,7 @@ use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
 fn pick_dominant_leap<'a>(
     datetime: &DateTime<Utc>,
     leaps: &'a [LeapUtc],
-) -> Result<&'a LeapUtc, String> {
+) -> Result<&'a LeapUtc, Error> {
     // 線形探索
     let mut prev_leap: Option<&LeapUtc> = None;
     for leap in leaps.iter() {
@@ -19,18 +20,21 @@ fn pick_dominant_leap<'a>(
         }
         prev_leap = Some(leap);
     }
-
-    return prev_leap.ok_or(format!("The datetime is too low: {}", datetime));
+    return match prev_leap {
+        Some(leap) => Ok(leap),
+        None => Err(Error::DatetimeTooLowError(datetime.to_string()))?,
+    };
 }
 
-pub fn utc2tai(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String, String> {
-    Utc.datetime_from_str(datetime, dt_fmt)
-        .map_err(|err| err.to_string())
-        .and_then(|datetime| utc2tai_dt(&datetime, leaps))
-        .map(|tai| tai.format(dt_fmt).to_string())
+pub fn utc2tai(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String, Error> {
+    let datetime = Utc
+        .datetime_from_str(datetime, dt_fmt)
+        .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
+    let tai = utc2tai_dt(&datetime, leaps)?;
+    Ok(tai.format(dt_fmt).to_string())
 }
 
-fn utc2tai_dt(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTime, String> {
+fn utc2tai_dt(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
     let datetime_nm = normalize_leap(datetime);
 
     return pick_dominant_leap(datetime, leaps)

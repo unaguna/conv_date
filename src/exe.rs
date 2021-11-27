@@ -1,4 +1,5 @@
 use crate::{LeapUtc, DT_FMT};
+use anyhow::{Context, Result};
 use clap::{App, Arg, ArgMatches, Values};
 use std::env;
 use std::fs::File;
@@ -6,30 +7,38 @@ use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
 const LEAPS_TABLE_FILENAME: &str = "leaps.txt";
+pub const EXIT_CODE_OK: i32 = 0;
+pub const EXIT_CODE_NG: i32 = 1;
+pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
 
-pub fn get_leaps_path() -> Result<PathBuf, String> {
-    let mut exe_path = match env::current_exe() {
-        Ok(exe_path) => exe_path,
-        Err(e) => return Err(e.to_string()),
-    };
+pub fn print_err(err: &dyn std::fmt::Display) {
+    eprintln!("{}: {}", exe_name(), err)
+}
+
+pub fn exe_name() -> String {
+    return PathBuf::from(env::args().next().unwrap())
+        .file_name()
+        .and_then(std::ffi::OsStr::to_str)
+        .unwrap()
+        .to_string();
+}
+
+pub fn get_leaps_path() -> Result<PathBuf> {
+    let mut exe_path = env::current_exe()?;
     exe_path.pop();
     exe_path.push(LEAPS_TABLE_FILENAME);
     return Ok(exe_path);
 }
 
-pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>, String> {
-    let leaps_file = File::open(leaps_file);
-    let leaps_file = match leaps_file {
-        Ok(leaps_file) => leaps_file,
-        Err(err) => return Err(err.to_string()),
-    };
+pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>> {
+    let leaps_file = File::open(leaps_file).context(format!(
+        "The leaps table file isn't available: {}",
+        leaps_file.to_str().unwrap()
+    ))?;
 
     let leaps: Result<Vec<_>, _> = BufReader::new(leaps_file)
         .lines()
-        .map(|line| match line {
-            Ok(line) => LeapUtc::from_line(&line, " ", datetime_fmt),
-            Err(err) => Err(err.to_string()),
-        })
+        .map(|line| LeapUtc::from_line(&line?, " ", datetime_fmt))
         .collect();
     leaps
 }

@@ -1,8 +1,11 @@
+pub mod error;
 pub mod exe;
 mod tai2utc;
 mod tt;
 mod utc2tai;
+use anyhow::Result;
 use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc};
+use error::Error;
 pub use tai2utc::tai2utc;
 pub use tt::{tai2tt, tt2tai};
 pub use utc2tai::utc2tai;
@@ -17,25 +20,22 @@ pub struct LeapUtc {
 }
 
 impl LeapUtc {
-    pub fn from_line(line: &str, sep: &str, fmt: &str) -> Result<LeapUtc, String> {
+    pub fn from_line(line: &str, sep: &str, fmt: &str) -> Result<LeapUtc> {
         let parts: Vec<&str> = line.splitn(3, sep).collect();
         if parts.len() != 2 {
-            return Err(format!("Illegal leap definition (block size): {}", line));
+            Err(Error::LeapTableParseError(line.to_string()))?;
         }
         let datetime = Utc.datetime_from_str(parts[0], fmt);
         let datetime = match datetime {
             Ok(datetime) => datetime,
             Err(_e) => {
-                return Err(format!(
-                    "Illegal leap definition (datetime format): {}",
-                    line
-                ))
+                return Err(Error::LeapTableDatetimeParseError(parts[0].to_string()))?;
             }
         };
         let diff_seconds: Result<i64, _> = parts[1].parse();
         let diff_seconds = match diff_seconds {
             Ok(diff_seconds) => diff_seconds,
-            Err(_e) => return Err(format!("Illegal leap definition (delta seconds): {}", line)),
+            Err(_e) => return Err(Error::LeapTableParseError(line.to_string()))?,
         };
         Ok(LeapUtc {
             datetime,
