@@ -1,8 +1,5 @@
-use crate::{
-    exe,
-    exe::{Arguments, EnvValues, Parameters},
-    tai2utc,
-};
+use super::{Arguments, EnvValues, Parameters};
+use crate::{exe, tai2utc};
 
 pub fn main_inner(
     args: impl IntoIterator<Item = String>,

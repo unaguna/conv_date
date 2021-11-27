@@ -1,9 +1,5 @@
-use crate::{
-    error::Error,
-    exe,
-    exe::{Arguments, EnvValues, Parameters},
-    tai2tt, utc2tai,
-};
+use super::{Arguments, EnvValues, Parameters};
+use crate::{error::Error, exe, tai2tt, utc2tai};
 
 pub fn main_inner(
     args: impl IntoIterator<Item = String>,
