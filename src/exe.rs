@@ -6,6 +6,10 @@ use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
+pub mod tai2utc;
+pub mod tt2utc;
+pub mod utc2tai;
+pub mod utc2tt;
 
 const LEAPS_TABLE_FILENAME: &str = "leaps.txt";
 pub const EXIT_CODE_OK: i32 = 0;
