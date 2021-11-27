@@ -72,15 +72,15 @@ impl EnvValues {
     }
 }
 
-pub struct Arguments<'a> {
+pub struct Parameters<'a> {
     matches: ArgMatches<'a>,
     dt_fmt: String,
     leaps_dt_fmt: String,
     leaps_path: PathBuf,
 }
 
-impl Arguments<'_> {
-    pub fn new<'a>(app_name: &str, env_vars: &EnvValues) -> Arguments<'a> {
+impl Parameters<'_> {
+    pub fn new<'a>(app_name: &str, env_vars: &EnvValues) -> Parameters<'a> {
         let app: App<'a, 'a> = App::new(app_name)
             .arg(
                 Arg::with_name("leaps_dt_fmt")
@@ -113,10 +113,10 @@ impl Arguments<'_> {
                     .required(true),
             );
         let matches: ArgMatches<'a> = app.get_matches();
-        return Arguments {
-            dt_fmt: Arguments::decide_dt_fmt(&matches, env_vars),
-            leaps_dt_fmt: Arguments::decide_leaps_dt_fmt(&matches, env_vars),
-            leaps_path: Arguments::decide_leaps_path(&matches, env_vars),
+        return Parameters {
+            dt_fmt: Parameters::decide_dt_fmt(&matches, env_vars),
+            leaps_dt_fmt: Parameters::decide_leaps_dt_fmt(&matches, env_vars),
+            leaps_path: Parameters::decide_leaps_path(&matches, env_vars),
             matches,
         };
     }

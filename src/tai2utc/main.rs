@@ -14,7 +14,7 @@ fn main_inner(
     let env_vars = EnvValues::new(env_vars);
 
     // Analize the arguments
-    let args = exe::Arguments::new("Converter from TAI to UTC", &env_vars);
+    let args = exe::Parameters::new("Converter from TAI to UTC", &env_vars);
 
     // load leap list
     let leaps =
