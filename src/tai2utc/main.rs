@@ -1,8 +1,20 @@
-use conv_date::{exe, tai2utc};
+use conv_date::{exe, exe::EnvValues, tai2utc};
+use std::env;
 
 fn main() {
+    main_inner(env::vars())
+}
+
+fn main_inner(
+    env_vars: impl IntoIterator<
+        Item = (String, String),
+        IntoIter = impl Iterator<Item = (String, String)>,
+    >,
+) {
+    let env_vars = EnvValues::new(env_vars);
+
     // Analize the arguments
-    let args = exe::Arguments::new("Converter from TAI to UTC");
+    let args = exe::Arguments::new("Converter from TAI to UTC", &env_vars);
 
     // load leap list
     let leaps =

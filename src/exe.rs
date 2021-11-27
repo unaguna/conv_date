@@ -1,6 +1,7 @@
 use crate::{LeapUtc, DT_FMT};
 use anyhow::{Context, Result};
 use clap::{App, Arg, ArgMatches, Values};
+use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -36,6 +37,29 @@ pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUt
     leaps
 }
 
+/// Environment variables which conv_date uses
+pub struct EnvValues {
+    pub dt_fmt: Option<String>,
+    pub leaps_dt_fmt: Option<String>,
+    pub leaps_path: Option<String>,
+}
+
+impl EnvValues {
+    pub fn new(
+        iter: impl IntoIterator<
+            Item = (String, String),
+            IntoIter = impl Iterator<Item = (String, String)>,
+        >,
+    ) -> EnvValues {
+        let map = iter.into_iter().collect::<HashMap<_, _>>();
+        EnvValues {
+            dt_fmt: map.get("DT_FMT").map(|s| s.to_string()),
+            leaps_dt_fmt: map.get("LEAPS_DT_FMT").map(|s| s.to_string()),
+            leaps_path: map.get("LEAPS_TABLE").map(|s| s.to_string()),
+        }
+    }
+}
+
 pub struct Arguments<'a> {
     matches: ArgMatches<'a>,
     dt_fmt: String,
@@ -44,7 +68,7 @@ pub struct Arguments<'a> {
 }
 
 impl Arguments<'_> {
-    pub fn new<'a>(app_name: &str) -> Arguments<'a> {
+    pub fn new<'a>(app_name: &str, env_vars: &EnvValues) -> Arguments<'a> {
         let app: App<'a, 'a> = App::new(app_name)
             .arg(
                 Arg::with_name("leaps_dt_fmt")
@@ -78,9 +102,9 @@ impl Arguments<'_> {
             );
         let matches: ArgMatches<'a> = app.get_matches();
         return Arguments {
-            dt_fmt: Arguments::decide_dt_fmt(&matches),
-            leaps_dt_fmt: Arguments::decide_leaps_dt_fmt(&matches),
-            leaps_path: Arguments::decide_leaps_path(&matches),
+            dt_fmt: Arguments::decide_dt_fmt(&matches, env_vars),
+            leaps_dt_fmt: Arguments::decide_leaps_dt_fmt(&matches, env_vars),
+            leaps_path: Arguments::decide_leaps_path(&matches, env_vars),
             matches,
         };
     }
@@ -97,20 +121,20 @@ impl Arguments<'_> {
         return &self.leaps_dt_fmt;
     }
 
-    fn decide_dt_fmt(matches: &ArgMatches) -> String {
+    fn decide_dt_fmt(matches: &ArgMatches, env_vars: &EnvValues) -> String {
         let s: String = matches
             .value_of("dt_fmt")
             .map(|s| s.to_string())
-            .or(env::var("DT_FMT").ok())
+            .or(env_vars.dt_fmt.clone())
             .unwrap_or(DT_FMT.to_string());
         return s;
     }
 
-    fn decide_leaps_dt_fmt(matches: &ArgMatches) -> String {
+    fn decide_leaps_dt_fmt(matches: &ArgMatches, env_vars: &EnvValues) -> String {
         let s: String = matches
             .value_of("leaps_dt_fmt")
             .map(|s| s.to_string())
-            .or(env::var("LEAPS_DT_FMT").ok())
+            .or(env_vars.leaps_dt_fmt.clone())
             .unwrap_or(DT_FMT.to_string());
         return s;
     }
@@ -123,14 +147,14 @@ impl Arguments<'_> {
         return &self.leaps_path;
     }
 
-    fn decide_leaps_path(matches: &ArgMatches) -> PathBuf {
+    fn decide_leaps_path(matches: &ArgMatches, env_vars: &EnvValues) -> PathBuf {
         // If it is specified as command args, use it.
         if let Some(path) = matches.value_of("leaps_table_file") {
             return PathBuf::from(path);
         }
 
         // If it is spcified as environment variable, use it.
-        if let Ok(path) = env::var("LEAPS_TABLE") {
+        if let Some(path) = env_vars.leaps_path.clone() {
             return PathBuf::from(path);
         }
 
