@@ -22,7 +22,7 @@ fn main() {
         match tai {
             Err(e) => {
                 someone_is_err = true;
-                eprintln!("{}", e)
+                exe::print_err(&e)
             }
             Ok(tai) => print_line(in_utc, &tai),
         }

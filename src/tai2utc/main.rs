@@ -22,7 +22,7 @@ fn main() {
         match utc {
             Err(e) => {
                 someone_is_err = true;
-                eprintln!("{}", e)
+                exe::print_err(&e)
             }
             Ok(utc) => print_line(in_tt, &utc),
         }

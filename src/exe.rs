@@ -10,6 +10,18 @@ const LEAPS_TABLE_FILENAME: &str = "leaps.txt";
 pub const EXIT_CODE_OK: i32 = 0;
 pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
 
+pub fn print_err(err: &anyhow::Error) {
+    eprintln!("{}: {}", exe_name(), err)
+}
+
+pub fn exe_name() -> String {
+    return PathBuf::from(env::args().next().unwrap())
+        .file_name()
+        .and_then(std::ffi::OsStr::to_str)
+        .unwrap()
+        .to_string();
+}
+
 pub fn get_leaps_path() -> Result<PathBuf> {
     let mut exe_path = env::current_exe()?;
     exe_path.pop();
