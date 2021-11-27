@@ -23,13 +23,6 @@ pub fn exe_name() -> String {
         .to_string();
 }
 
-pub fn get_leaps_path() -> Result<PathBuf> {
-    let mut exe_path = env::current_exe()?;
-    exe_path.pop();
-    exe_path.push(LEAPS_TABLE_FILENAME);
-    return Ok(exe_path);
-}
-
 pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>> {
     let leaps_file = File::open(leaps_file).context(format!(
         "The leaps table file isn't available: {}",
@@ -69,6 +62,12 @@ impl Arguments<'_> {
                     .help("If it is specified, input datetime is also output to stdin.")
                     .short("H")
                     .long("io-pair"),
+            )
+            .arg(
+                Arg::with_name("leaps_table_file")
+                    .help("Filepath of leaps table file. If it is not specified, the default file is used.")
+                    .takes_value(true)
+                    .long("leaps-table"),
             )
             .arg(
                 Arg::with_name("datetime")
@@ -116,5 +115,18 @@ impl Arguments<'_> {
 
     pub fn io_pair_flg(&self) -> bool {
         return self.matches.is_present("io_pair_flg");
+    }
+
+    pub fn get_leaps_path(&self) -> Result<PathBuf> {
+        // If it is specified as command args, use it.
+        if let Some(path) = self.matches.value_of("leaps_table_file") {
+            return Ok(PathBuf::from(path));
+        }
+
+        // use default file
+        let mut exe_path = env::current_exe()?;
+        exe_path.pop();
+        exe_path.push(LEAPS_TABLE_FILENAME);
+        return Ok(exe_path);
     }
 }

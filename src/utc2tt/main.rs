@@ -5,7 +5,8 @@ fn main() {
     let args = exe::Arguments::new("Converter from UTC to TT");
 
     // load leap list
-    let leaps = exe::get_leaps_path()
+    let leaps = args
+        .get_leaps_path()
         .and_then(|p| exe::load_leaps(&p, args.get_leaps_dt_fmt()))
         .unwrap_or_else(|e| {
             exe::print_err(&e);
