@@ -1,5 +1,5 @@
 use crate::{LeapUtc, DT_FMT};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{App, Arg, ArgMatches, Values};
 use std::env;
 use std::fs::File;
@@ -8,6 +8,7 @@ use std::path::PathBuf;
 
 const LEAPS_TABLE_FILENAME: &str = "leaps.txt";
 pub const EXIT_CODE_OK: i32 = 0;
+pub const EXIT_CODE_NG: i32 = 1;
 pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
 
 pub fn print_err(err: &anyhow::Error) {
@@ -30,7 +31,10 @@ pub fn get_leaps_path() -> Result<PathBuf> {
 }
 
 pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>> {
-    let leaps_file = File::open(leaps_file)?;
+    let leaps_file = File::open(leaps_file).context(format!(
+        "The leaps table file isn't available: {}",
+        leaps_file.to_str().unwrap()
+    ))?;
 
     let leaps: Result<Vec<_>, _> = BufReader::new(leaps_file)
         .lines()

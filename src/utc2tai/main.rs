@@ -7,7 +7,10 @@ fn main() {
     // load leap list
     let leaps = exe::get_leaps_path()
         .and_then(|p| exe::load_leaps(&p, args.get_leaps_dt_fmt()))
-        .unwrap();
+        .unwrap_or_else(|e| {
+            exe::print_err(&e);
+            std::process::exit(exe::EXIT_CODE_NG)
+        });
 
     let print_line = match args.io_pair_flg() {
         false => |_: &str, o: &str| println!("{}", o),
