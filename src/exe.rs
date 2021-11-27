@@ -11,7 +11,7 @@ pub const EXIT_CODE_OK: i32 = 0;
 pub const EXIT_CODE_NG: i32 = 1;
 pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
 
-pub fn print_err(err: &anyhow::Error) {
+pub fn print_err(err: &dyn std::fmt::Display) {
     eprintln!("{}: {}", exe_name(), err)
 }
 

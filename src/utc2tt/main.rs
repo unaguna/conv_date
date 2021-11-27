@@ -1,4 +1,4 @@
-use conv_date::{exe, tai2tt, utc2tai};
+use conv_date::{error::Error, exe, tai2tt, utc2tai};
 
 fn main() {
     // Analize the arguments
@@ -24,6 +24,11 @@ fn main() {
             .and_then(|tai| tai2tt(&tai, args.get_dt_fmt()));
 
         match tt {
+            Err(Error::DatetimeTooLowError(_)) => {
+                // 多段階で変換を行う場合、中間の日時文字列がエラーメッセージに使われている場合があるため、入力された日時文字列に置き換える。
+                someone_is_err = true;
+                exe::print_err(&Error::DatetimeTooLowError(in_utc.to_string()));
+            }
             Err(e) => {
                 someone_is_err = true;
                 exe::print_err(&e)

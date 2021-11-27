@@ -18,7 +18,10 @@ struct LeapTai {
 ///
 /// * `datetime` - A TAI datetime to convert to utc
 /// * `leaps` - A list of leap objects
-fn pick_dominant_leap<'a>(datetime: &NaiveDateTime, leaps: &'a [LeapTai]) -> Result<&'a LeapTai> {
+fn pick_dominant_leap<'a>(
+    datetime: &NaiveDateTime,
+    leaps: &'a [LeapTai],
+) -> Result<&'a LeapTai, Error> {
     // 線形探索
     let mut prev_leap: Option<&LeapTai> = None;
     for leap in leaps.iter() {
@@ -56,14 +59,14 @@ fn utc_leaps_to_tai_leaps(leaps: &[LeapUtc]) -> Vec<LeapTai> {
     return tai_leaps;
 }
 
-pub fn tai2utc(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String> {
+pub fn tai2utc(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
     let utc = tai2utc_dt(&datetime, leaps)?;
     Ok(utc.format(dt_fmt).to_string())
 }
 
-fn tai2utc_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime> {
+fn tai2utc_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
     let leaps = utc_leaps_to_tai_leaps(leaps);
     return pick_dominant_leap(datetime, &leaps).map(|leap| {
         let mut datetime_tmp = datetime.clone();
