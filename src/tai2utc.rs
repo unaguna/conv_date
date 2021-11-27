@@ -1,7 +1,6 @@
 use crate::{error::Error, normalize_leap, LeapUtc};
 use anyhow::Result;
 use chrono::{Duration, NaiveDateTime, Timelike};
-use std::convert::TryFrom;
 
 struct LeapTai {
     // うるう秒によってずれるタイミング (TAI)
@@ -46,7 +45,7 @@ fn utc_leaps_to_tai_leaps(leaps: &[LeapUtc]) -> Vec<LeapTai> {
                 datetime: normalize_leap(&leap.datetime)
                     + Duration::seconds(leap.diff_seconds - corr_seconds),
                 diff_seconds: -leap.diff_seconds,
-                corr_seconds: TryFrom::try_from(corr_seconds).unwrap(),
+                corr_seconds: corr_seconds as u32,
             })
         }
         tai_leaps.push(LeapTai {
