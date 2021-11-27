@@ -23,13 +23,6 @@ pub fn exe_name() -> String {
         .to_string();
 }
 
-pub fn get_leaps_path() -> Result<PathBuf> {
-    let mut exe_path = env::current_exe()?;
-    exe_path.pop();
-    exe_path.push(LEAPS_TABLE_FILENAME);
-    return Ok(exe_path);
-}
-
 pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>> {
     let leaps_file = File::open(leaps_file).context(format!(
         "The leaps table file isn't available: {}",
@@ -47,6 +40,7 @@ pub struct Arguments<'a> {
     matches: ArgMatches<'a>,
     dt_fmt: String,
     leaps_dt_fmt: String,
+    leaps_path: PathBuf,
 }
 
 impl Arguments<'_> {
@@ -71,6 +65,12 @@ impl Arguments<'_> {
                     .long("io-pair"),
             )
             .arg(
+                Arg::with_name("leaps_table_file")
+                    .help("Filepath of leaps table file. If it is not specified, environment value 'LEAPS_TABLE' is used. If both of them are not specified, the default file is used.")
+                    .takes_value(true)
+                    .long("leaps-table"),
+            )
+            .arg(
                 Arg::with_name("datetime")
                     .help("datetime to convert")
                     .multiple(true)
@@ -80,6 +80,7 @@ impl Arguments<'_> {
         return Arguments {
             dt_fmt: Arguments::decide_dt_fmt(&matches),
             leaps_dt_fmt: Arguments::decide_leaps_dt_fmt(&matches),
+            leaps_path: Arguments::decide_leaps_path(&matches),
             matches,
         };
     }
@@ -116,5 +117,27 @@ impl Arguments<'_> {
 
     pub fn io_pair_flg(&self) -> bool {
         return self.matches.is_present("io_pair_flg");
+    }
+
+    pub fn get_leaps_path(&self) -> &PathBuf {
+        return &self.leaps_path;
+    }
+
+    fn decide_leaps_path(matches: &ArgMatches) -> PathBuf {
+        // If it is specified as command args, use it.
+        if let Some(path) = matches.value_of("leaps_table_file") {
+            return PathBuf::from(path);
+        }
+
+        // If it is spcified as environment variable, use it.
+        if let Ok(path) = env::var("LEAPS_TABLE") {
+            return PathBuf::from(path);
+        }
+
+        // use default file
+        let mut exe_path = env::current_exe().unwrap();
+        exe_path.pop();
+        exe_path.push(LEAPS_TABLE_FILENAME);
+        return exe_path;
     }
 }
