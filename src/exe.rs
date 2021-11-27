@@ -66,7 +66,7 @@ impl Arguments<'_> {
             )
             .arg(
                 Arg::with_name("leaps_table_file")
-                    .help("Filepath of leaps table file. If it is not specified, the default file is used.")
+                    .help("Filepath of leaps table file. If it is not specified, environment value 'LEAPS_TABLE' is used. If both of them are not specified, the default file is used.")
                     .takes_value(true)
                     .long("leaps-table"),
             )
@@ -126,6 +126,11 @@ impl Arguments<'_> {
     fn decide_leaps_path(matches: &ArgMatches) -> PathBuf {
         // If it is specified as command args, use it.
         if let Some(path) = matches.value_of("leaps_table_file") {
+            return PathBuf::from(path);
+        }
+
+        // If it is spcified as environment variable, use it.
+        if let Ok(path) = env::var("LEAPS_TABLE") {
             return PathBuf::from(path);
         }
 
