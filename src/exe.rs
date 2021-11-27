@@ -39,9 +39,9 @@ pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUt
 
 /// Environment variables which conv_date uses
 pub struct EnvValues {
-    pub dt_fmt: Option<String>,
-    pub leaps_dt_fmt: Option<String>,
-    pub leaps_path: Option<String>,
+    dt_fmt: Option<String>,
+    leaps_dt_fmt: Option<String>,
+    leaps_path: Option<String>,
 }
 
 impl EnvValues {
@@ -57,6 +57,18 @@ impl EnvValues {
             leaps_dt_fmt: map.get("LEAPS_DT_FMT").map(|s| s.to_string()),
             leaps_path: map.get("LEAPS_TABLE").map(|s| s.to_string()),
         }
+    }
+
+    pub fn get_dt_fmt(&self) -> Option<&str> {
+        self.dt_fmt.as_ref().map(|s| s.as_str())
+    }
+
+    pub fn get_leaps_dt_fmt(&self) -> Option<&str> {
+        self.leaps_dt_fmt.as_ref().map(|s| s.as_str())
+    }
+
+    pub fn get_leaps_path(&self) -> Option<&str> {
+        self.leaps_path.as_ref().map(|s| s.as_str())
     }
 }
 
@@ -124,18 +136,18 @@ impl Arguments<'_> {
     fn decide_dt_fmt(matches: &ArgMatches, env_vars: &EnvValues) -> String {
         let s: String = matches
             .value_of("dt_fmt")
-            .map(|s| s.to_string())
-            .or(env_vars.dt_fmt.clone())
-            .unwrap_or(DT_FMT.to_string());
+            .or(env_vars.get_dt_fmt())
+            .unwrap_or(DT_FMT)
+            .to_string();
         return s;
     }
 
     fn decide_leaps_dt_fmt(matches: &ArgMatches, env_vars: &EnvValues) -> String {
         let s: String = matches
             .value_of("leaps_dt_fmt")
-            .map(|s| s.to_string())
-            .or(env_vars.leaps_dt_fmt.clone())
-            .unwrap_or(DT_FMT.to_string());
+            .or(env_vars.get_leaps_dt_fmt())
+            .unwrap_or(DT_FMT)
+            .to_string();
         return s;
     }
 
@@ -154,7 +166,7 @@ impl Arguments<'_> {
         }
 
         // If it is spcified as environment variable, use it.
-        if let Some(path) = env_vars.leaps_path.clone() {
+        if let Some(path) = env_vars.get_leaps_path() {
             return PathBuf::from(path);
         }
 
