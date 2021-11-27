@@ -40,6 +40,7 @@ pub struct Arguments<'a> {
     matches: ArgMatches<'a>,
     dt_fmt: String,
     leaps_dt_fmt: String,
+    leaps_path: PathBuf,
 }
 
 impl Arguments<'_> {
@@ -79,6 +80,7 @@ impl Arguments<'_> {
         return Arguments {
             dt_fmt: Arguments::decide_dt_fmt(&matches),
             leaps_dt_fmt: Arguments::decide_leaps_dt_fmt(&matches),
+            leaps_path: Arguments::decide_leaps_path(&matches),
             matches,
         };
     }
@@ -117,16 +119,20 @@ impl Arguments<'_> {
         return self.matches.is_present("io_pair_flg");
     }
 
-    pub fn get_leaps_path(&self) -> Result<PathBuf> {
+    pub fn get_leaps_path(&self) -> &PathBuf {
+        return &self.leaps_path;
+    }
+
+    fn decide_leaps_path(matches: &ArgMatches) -> PathBuf {
         // If it is specified as command args, use it.
-        if let Some(path) = self.matches.value_of("leaps_table_file") {
-            return Ok(PathBuf::from(path));
+        if let Some(path) = matches.value_of("leaps_table_file") {
+            return PathBuf::from(path);
         }
 
         // use default file
-        let mut exe_path = env::current_exe()?;
+        let mut exe_path = env::current_exe().unwrap();
         exe_path.pop();
         exe_path.push(LEAPS_TABLE_FILENAME);
-        return Ok(exe_path);
+        return exe_path;
     }
 }

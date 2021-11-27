@@ -5,10 +5,8 @@ fn main() {
     let args = exe::Arguments::new("Converter from TT to UTC");
 
     // load leap list
-    let leaps = args
-        .get_leaps_path()
-        .and_then(|p| exe::load_leaps(&p, args.get_leaps_dt_fmt()))
-        .unwrap_or_else(|e| {
+    let leaps =
+        exe::load_leaps(&args.get_leaps_path(), args.get_leaps_dt_fmt()).unwrap_or_else(|e| {
             exe::print_err(&e);
             std::process::exit(exe::EXIT_CODE_NG)
         });
