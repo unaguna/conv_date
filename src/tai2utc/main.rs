@@ -1,29 +1,35 @@
-use conv_date::{exe, exe::EnvValues, tai2utc};
+use conv_date::{
+    exe,
+    exe::{Arguments, EnvValues, Parameters},
+    tai2utc,
+};
 use std::env;
 
 fn main() {
-    main_inner(env::vars())
+    main_inner(env::args(), env::vars())
 }
 
 fn main_inner(
+    args: impl IntoIterator<Item = String>,
     env_vars: impl IntoIterator<
         Item = (String, String),
         IntoIter = impl Iterator<Item = (String, String)>,
     >,
 ) {
+    let args = Arguments::new("Converter from TAI to UTC", args);
     let env_vars = EnvValues::new(env_vars);
 
-    // Analize the arguments
-    let args = exe::Parameters::new("Converter from TAI to UTC", &env_vars);
+    // Analize the arguments and the environment variables.
+    let params = Parameters::new(&args, &env_vars);
 
     // load leap list
-    let leaps =
-        exe::load_leaps(&args.get_leaps_path(), args.get_leaps_dt_fmt()).unwrap_or_else(|e| {
+    let leaps = exe::load_leaps(&params.get_leaps_path(), params.get_leaps_dt_fmt())
+        .unwrap_or_else(|e| {
             exe::print_err(&e);
             std::process::exit(exe::EXIT_CODE_NG)
         });
 
-    let print_line = match args.io_pair_flg() {
+    let print_line = match params.io_pair_flg() {
         false => |_: &str, o: &str| println!("{}", o),
         true => |i: &str, o: &str| println!("{} {}", i, o),
     };
@@ -31,7 +37,7 @@ fn main_inner(
     // calc UTC
     let mut someone_is_err = false;
     for in_tt in args.get_datetimes() {
-        let utc = tai2utc(in_tt, &leaps, args.get_dt_fmt());
+        let utc = tai2utc(in_tt, &leaps, params.get_dt_fmt());
 
         match utc {
             Err(e) => {
