@@ -7,7 +7,7 @@ pub fn main_inner(
         Item = (String, String),
         IntoIter = impl Iterator<Item = (String, String)>,
     >,
-) {
+) -> i32 {
     let args = Arguments::new("Converter from UTC to TAI", args);
     let env_vars = EnvValues::new(env_vars);
 
@@ -15,11 +15,14 @@ pub fn main_inner(
     let params = Parameters::new(&args, &env_vars);
 
     // load leap list
-    let leaps = exe::load_leaps(&params.get_leaps_path(), params.get_leaps_dt_fmt())
-        .unwrap_or_else(|e| {
+    let leaps = exe::load_leaps(&params.get_leaps_path(), params.get_leaps_dt_fmt());
+    let leaps = match leaps {
+        Ok(leap) => leap,
+        Err(e) => {
             exe::print_err(&e);
-            std::process::exit(exe::EXIT_CODE_NG)
-        });
+            return exe::EXIT_CODE_NG;
+        }
+    };
 
     let print_line = match params.io_pair_flg() {
         false => |_: &str, o: &str| println!("{}", o),
@@ -40,9 +43,9 @@ pub fn main_inner(
         }
     }
 
-    std::process::exit(if someone_is_err {
+    return if someone_is_err {
         exe::EXIT_CODE_SOME_DT_NOT_CONVERTED
     } else {
         exe::EXIT_CODE_OK
-    });
+    };
 }
