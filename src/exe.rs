@@ -3,6 +3,7 @@ use anyhow::{Context, Result};
 use clap::{App, Arg, ArgMatches, Values};
 use std::collections::HashMap;
 use std::env;
+use std::ffi::OsString;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -51,7 +52,10 @@ pub struct Arguments<'a> {
 }
 
 impl Arguments<'_> {
-    pub fn new<'a>(app_name: &str, args: impl IntoIterator<Item = String>) -> Arguments<'a> {
+    pub fn new<'a>(
+        app_name: &str,
+        args: impl IntoIterator<Item = impl Into<OsString> + Clone>,
+    ) -> Arguments<'a> {
         let app: App<'a, 'a> = App::new(app_name)
             .arg(
                 Arg::with_name("leaps_dt_fmt")
@@ -123,13 +127,11 @@ pub struct EnvValues {
 }
 
 impl EnvValues {
-    pub fn new(
-        iter: impl IntoIterator<
-            Item = (String, String),
-            IntoIter = impl Iterator<Item = (String, String)>,
-        >,
-    ) -> EnvValues {
-        let map = iter.into_iter().collect::<HashMap<_, _>>();
+    pub fn new(iter: impl IntoIterator<Item = (impl ToString, impl ToString)>) -> EnvValues {
+        let map = iter
+            .into_iter()
+            .map(|(key, value)| (key.to_string(), value))
+            .collect::<HashMap<_, _>>();
         EnvValues {
             dt_fmt: map.get("DT_FMT").map(|s| s.to_string()),
             leaps_dt_fmt: map.get("LEAPS_DT_FMT").map(|s| s.to_string()),

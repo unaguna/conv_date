@@ -1,12 +1,10 @@
 use super::{Arguments, EnvValues, Parameters};
 use crate::{exe, utc2tai};
+use std::ffi::OsString;
 
 pub fn main_inner(
-    args: impl IntoIterator<Item = String>,
-    env_vars: impl IntoIterator<
-        Item = (String, String),
-        IntoIter = impl Iterator<Item = (String, String)>,
-    >,
+    args: impl IntoIterator<Item = impl Into<OsString> + Clone>,
+    env_vars: impl IntoIterator<Item = (impl ToString, impl ToString)>,
 ) -> i32 {
     let args = Arguments::new("Converter from UTC to TAI", args);
     let env_vars = EnvValues::new(env_vars);
