@@ -12,6 +12,9 @@ pub mod tt2utc;
 pub mod utc2tai;
 pub mod utc2tt;
 
+#[cfg(test)]
+mod testmod;
+
 const LEAPS_TABLE_FILENAME: &str = "leaps.txt";
 pub const EXIT_CODE_OK: i32 = 0;
 pub const EXIT_CODE_NG: i32 = 1;
