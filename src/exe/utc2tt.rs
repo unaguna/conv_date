@@ -62,6 +62,11 @@ mod tests {
 
     const EXE_NAME: &str = "utc2tt";
 
+    /// Test regular case.
+    ///
+    /// It runs with no arguments and just one environment value "LEAPS_TABLE" for reproducibility
+    /// but originally the minimum execution is with no environment values.
+    /// If "LEAPS_TABLE" is not specified, the program uses file in the directory of the executable file.
     #[test]
     fn test_simply() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -71,7 +76,7 @@ mod tests {
                 "2012-07-01T00:00:00 5",
                 "2015-07-01T00:00:00 6",
                 "2017-01-01T00:00:00 7",
-            ][..],
+            ],
         )
         .unwrap();
 
@@ -96,6 +101,7 @@ mod tests {
         assert_eq!(exec_code, 0);
     }
 
+    /// Test an argunent --leaps-table.
     #[test]
     fn test_arg_leaps_table() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -105,7 +111,7 @@ mod tests {
                 "2012-07-01T00:00:00 5",
                 "2015-07-01T00:00:00 6",
                 "2017-01-01T00:00:00 7",
-            ][..],
+            ],
         )
         .unwrap();
 
@@ -132,6 +138,7 @@ mod tests {
         assert_eq!(exec_code, 0);
     }
 
+    /// Test that an argument --leaps-table has a priority to an environment variable LEAPS_TABLE.
     #[test]
     fn test_arg_leaps_table_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -141,11 +148,11 @@ mod tests {
                 "2012-07-01T00:00:00 5",
                 "2015-07-01T00:00:00 6",
                 "2017-01-01T00:00:00 7",
-            ][..],
+            ],
         )
         .unwrap();
         let dummy_leaps_table_path =
-            testmod::tmp_text_file(&test_dir, "dummy_leap.txt", &vec!["XXX"][..]).unwrap();
+            testmod::tmp_text_file(&test_dir, "dummy_leap.txt", &vec!["XXX"]).unwrap();
 
         let args = vec![
             EXE_NAME,
@@ -170,6 +177,7 @@ mod tests {
         assert_eq!(exec_code, 0);
     }
 
+    /// Test an argunent --dt-fmt.
     #[test]
     fn test_arg_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -179,7 +187,7 @@ mod tests {
                 "2012-07-01T00:00:00 5",
                 "2015-07-01T00:00:00 6",
                 "2017-01-01T00:00:00 7",
-            ][..],
+            ],
         )
         .unwrap();
 
@@ -206,6 +214,7 @@ mod tests {
         assert_eq!(exec_code, 0);
     }
 
+    /// Test an environment variable DT_FMT.
     #[test]
     fn test_env_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -215,7 +224,7 @@ mod tests {
                 "2012-07-01T00:00:00 5",
                 "2015-07-01T00:00:00 6",
                 "2017-01-01T00:00:00 7",
-            ][..],
+            ],
         )
         .unwrap();
 
@@ -243,6 +252,7 @@ mod tests {
         assert_eq!(exec_code, 0);
     }
 
+    /// Test that an argunent --dt-fmt has a priority to an environment variable DT_FMT.
     #[test]
     fn test_arg_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -252,7 +262,7 @@ mod tests {
                 "2012-07-01T00:00:00 5",
                 "2015-07-01T00:00:00 6",
                 "2017-01-01T00:00:00 7",
-            ][..],
+            ],
         )
         .unwrap();
 
@@ -282,6 +292,7 @@ mod tests {
         assert_eq!(exec_code, 0);
     }
 
+    /// Test an argunent --leaps-dt-fmt.
     #[test]
     fn test_arg_leaps_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -291,7 +302,7 @@ mod tests {
                 "20120701000000000 5",
                 "20150701000000000 6",
                 "20170101000000000 7",
-            ][..],
+            ],
         )
         .unwrap();
 
@@ -318,6 +329,7 @@ mod tests {
         assert_eq!(exec_code, 0);
     }
 
+    /// Test an environment variable LEAPS_DT_FMT.
     #[test]
     fn test_env_leaps_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -327,7 +339,7 @@ mod tests {
                 "20120701000000000 5",
                 "20150701000000000 6",
                 "20170101000000000 7",
-            ][..],
+            ],
         )
         .unwrap();
 
@@ -355,6 +367,7 @@ mod tests {
         assert_eq!(exec_code, 0);
     }
 
+    /// Test that an argunent --leaps-dt-fmt has a priority to an environment variable LEAPS_DT_FMT
     #[test]
     fn test_arg_leaps_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -364,7 +377,7 @@ mod tests {
                 "2012/07/01-00:00:00 5",
                 "2015/07/01-00:00:00 6",
                 "2017/01/01-00:00:00 7",
-            ][..],
+            ],
         )
         .unwrap();
 
