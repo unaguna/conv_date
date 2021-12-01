@@ -1,10 +1,12 @@
 use super::{Arguments, EnvValues, Parameters};
 use crate::{error::Error, exe, tai2utc, tt2tai};
 use std::ffi::OsString;
+use std::io::Write;
 
 pub fn main_inner(
     args: impl IntoIterator<Item = impl Into<OsString> + Clone>,
     env_vars: impl IntoIterator<Item = (impl ToString, impl ToString)>,
+    stdout: &mut impl Write,
 ) -> i32 {
     let args = Arguments::new("Converter from TT to UTC", args);
     let env_vars = EnvValues::new(env_vars);
@@ -22,9 +24,9 @@ pub fn main_inner(
         }
     };
 
-    let print_line = match params.io_pair_flg() {
-        false => |_: &str, o: &str| println!("{}", o),
-        true => |i: &str, o: &str| println!("{} {}", i, o),
+    let print_line: fn(&mut dyn Write, &str, &str) -> () = match params.io_pair_flg() {
+        false => |out: &mut dyn Write, _: &str, o: &str| writeln!(out, "{}", o).unwrap(),
+        true => |out: &mut dyn Write, i: &str, o: &str| writeln!(out, "{} {}", i, o).unwrap(),
     };
 
     // calc UTC
@@ -43,7 +45,7 @@ pub fn main_inner(
                 someone_is_err = true;
                 exe::print_err(&e)
             }
-            Ok(utc) => print_line(in_tt, &utc),
+            Ok(utc) => print_line(stdout, in_tt, &utc),
         }
     }
 
@@ -59,6 +61,7 @@ mod tests {
     use super::super::testmod;
     use super::main_inner;
     use std::collections::HashMap;
+    use std::io;
 
     const EXE_NAME: &str = "utc2tt";
 
@@ -96,7 +99,7 @@ mod tests {
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars);
+        let exec_code = main_inner(args, env_vars, &mut io::stdout());
 
         assert_eq!(exec_code, 0);
     }
@@ -133,7 +136,7 @@ mod tests {
         let env_vars: HashMap<&str, &str> = HashMap::from([]);
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars);
+        let exec_code = main_inner(args, env_vars, &mut io::stdout());
 
         assert_eq!(exec_code, 0);
     }
@@ -172,7 +175,7 @@ mod tests {
         let env_vars = HashMap::from([("LEAPS_TABLE", dummy_leaps_table_path.to_str().unwrap())]);
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars);
+        let exec_code = main_inner(args, env_vars, &mut io::stdout());
 
         assert_eq!(exec_code, 0);
     }
@@ -209,7 +212,7 @@ mod tests {
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars);
+        let exec_code = main_inner(args, env_vars, &mut io::stdout());
 
         assert_eq!(exec_code, 0);
     }
@@ -247,7 +250,7 @@ mod tests {
         ]);
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars);
+        let exec_code = main_inner(args, env_vars, &mut io::stdout());
 
         assert_eq!(exec_code, 0);
     }
@@ -287,7 +290,7 @@ mod tests {
         ]);
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars);
+        let exec_code = main_inner(args, env_vars, &mut io::stdout());
 
         assert_eq!(exec_code, 0);
     }
@@ -324,7 +327,7 @@ mod tests {
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars);
+        let exec_code = main_inner(args, env_vars, &mut io::stdout());
 
         assert_eq!(exec_code, 0);
     }
@@ -362,7 +365,7 @@ mod tests {
         ]);
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars);
+        let exec_code = main_inner(args, env_vars, &mut io::stdout());
 
         assert_eq!(exec_code, 0);
     }
@@ -402,7 +405,7 @@ mod tests {
         ]);
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars);
+        let exec_code = main_inner(args, env_vars, &mut io::stdout());
 
         assert_eq!(exec_code, 0);
     }
