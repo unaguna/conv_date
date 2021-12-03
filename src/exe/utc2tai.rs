@@ -55,7 +55,6 @@ mod tests {
     use super::super::testmod;
     use super::main_inner;
     use std::collections::HashMap;
-    use std::io;
 
     const EXE_NAME: &str = "utc2tt";
 
@@ -91,11 +90,25 @@ mod tests {
             "2017-01-01T00:00:02",
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
+        let mut stdout_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut io::stdout());
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
 
         assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-07-01T00:00:04.000\n\
+            2015-07-01T00:00:05.001\n\
+            2015-07-01T00:00:06.002\n\
+            2015-07-01T00:00:07.003\n\
+            2015-07-01T00:00:08.004\n\
+            2017-01-01T00:00:05.000\n\
+            2017-01-01T00:00:06.000\n\
+            2017-01-01T00:00:07.000\n\
+            2017-01-01T00:00:08.000\n\
+            2017-01-01T00:00:09.000\n"
+        );
     }
 
     /// Test an argunent --leaps-table.
@@ -128,11 +141,25 @@ mod tests {
             leaps_table_path.to_str().unwrap(),
         ];
         let env_vars: HashMap<&str, &str> = HashMap::from([]);
+        let mut stdout_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut io::stdout());
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
 
         assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-07-01T00:00:04.000\n\
+            2015-07-01T00:00:05.000\n\
+            2015-07-01T00:00:06.000\n\
+            2015-07-01T00:00:07.000\n\
+            2015-07-01T00:00:08.000\n\
+            2017-01-01T00:00:05.000\n\
+            2017-01-01T00:00:06.000\n\
+            2017-01-01T00:00:07.000\n\
+            2017-01-01T00:00:08.000\n\
+            2017-01-01T00:00:09.000\n"
+        );
     }
 
     /// Test that an argument --leaps-table has a priority to an environment variable LEAPS_TABLE.
@@ -167,11 +194,25 @@ mod tests {
             leaps_table_path.to_str().unwrap(),
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", dummy_leaps_table_path.to_str().unwrap())]);
+        let mut stdout_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut io::stdout());
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
 
         assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-07-01T00:00:04.000\n\
+            2015-07-01T00:00:05.000\n\
+            2015-07-01T00:00:06.000\n\
+            2015-07-01T00:00:07.000\n\
+            2015-07-01T00:00:08.000\n\
+            2017-01-01T00:00:05.000\n\
+            2017-01-01T00:00:06.000\n\
+            2017-01-01T00:00:07.000\n\
+            2017-01-01T00:00:08.000\n\
+            2017-01-01T00:00:09.000\n"
+        );
     }
 
     /// Test an argunent --dt-fmt.
@@ -204,11 +245,25 @@ mod tests {
             "%Y%m%d%H%M%S",
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
+        let mut stdout_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut io::stdout());
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
 
         assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "20150701000004\n\
+            20150701000005\n\
+            20150701000006\n\
+            20150701000007\n\
+            20150701000008\n\
+            20170101000005\n\
+            20170101000006\n\
+            20170101000007\n\
+            20170101000008\n\
+            20170101000009\n"
+        );
     }
 
     /// Test an environment variable DT_FMT.
@@ -242,11 +297,25 @@ mod tests {
             ("LEAPS_TABLE", leaps_table_path.to_str().unwrap()),
             ("DT_FMT", "%Y%m%d%H%M%S"),
         ]);
+        let mut stdout_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut io::stdout());
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
 
         assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "20150701000004\n\
+            20150701000005\n\
+            20150701000006\n\
+            20150701000007\n\
+            20150701000008\n\
+            20170101000005\n\
+            20170101000006\n\
+            20170101000007\n\
+            20170101000008\n\
+            20170101000009\n"
+        );
     }
 
     /// Test that an argunent --dt-fmt has a priority to an environment variable DT_FMT.
@@ -282,11 +351,25 @@ mod tests {
             ("LEAPS_TABLE", leaps_table_path.to_str().unwrap()),
             ("DT_FMT", "%Y%m%d%H%M%S"),
         ]);
+        let mut stdout_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut io::stdout());
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
 
         assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015/07/01-00:00:04\n\
+            2015/07/01-00:00:05\n\
+            2015/07/01-00:00:06\n\
+            2015/07/01-00:00:07\n\
+            2015/07/01-00:00:08\n\
+            2017/01/01-00:00:05\n\
+            2017/01/01-00:00:06\n\
+            2017/01/01-00:00:07\n\
+            2017/01/01-00:00:08\n\
+            2017/01/01-00:00:09\n"
+        );
     }
 
     /// Test an argunent --leaps-dt-fmt.
@@ -319,11 +402,25 @@ mod tests {
             "%Y%m%d%H%M%S%3f",
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
+        let mut stdout_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut io::stdout());
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
 
         assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-07-01T00:00:04.000\n\
+            2015-07-01T00:00:05.000\n\
+            2015-07-01T00:00:06.000\n\
+            2015-07-01T00:00:07.000\n\
+            2015-07-01T00:00:08.000\n\
+            2017-01-01T00:00:05.000\n\
+            2017-01-01T00:00:06.000\n\
+            2017-01-01T00:00:07.000\n\
+            2017-01-01T00:00:08.000\n\
+            2017-01-01T00:00:09.000\n"
+        );
     }
 
     /// Test an environment variable LEAPS_DT_FMT.
@@ -357,11 +454,25 @@ mod tests {
             ("LEAPS_TABLE", leaps_table_path.to_str().unwrap()),
             ("LEAPS_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
+        let mut stdout_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut io::stdout());
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
 
         assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-07-01T00:00:04.000\n\
+            2015-07-01T00:00:05.000\n\
+            2015-07-01T00:00:06.000\n\
+            2015-07-01T00:00:07.000\n\
+            2015-07-01T00:00:08.000\n\
+            2017-01-01T00:00:05.000\n\
+            2017-01-01T00:00:06.000\n\
+            2017-01-01T00:00:07.000\n\
+            2017-01-01T00:00:08.000\n\
+            2017-01-01T00:00:09.000\n"
+        );
     }
 
     /// Test that an argunent --leaps-dt-fmt has a priority to an environment variable LEAPS_DT_FMT
@@ -397,10 +508,24 @@ mod tests {
             ("LEAPS_TABLE", leaps_table_path.to_str().unwrap()),
             ("LEAPS_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
+        let mut stdout_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut io::stdout());
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
 
         assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-07-01T00:00:04.000\n\
+            2015-07-01T00:00:05.000\n\
+            2015-07-01T00:00:06.000\n\
+            2015-07-01T00:00:07.000\n\
+            2015-07-01T00:00:08.000\n\
+            2017-01-01T00:00:05.000\n\
+            2017-01-01T00:00:06.000\n\
+            2017-01-01T00:00:07.000\n\
+            2017-01-01T00:00:08.000\n\
+            2017-01-01T00:00:09.000\n"
+        );
     }
 }
