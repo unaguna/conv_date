@@ -25,10 +25,8 @@ pub fn main_inner(
         }
     };
 
-    let print_line: fn(&mut dyn Write, &str, &str) -> () = match params.io_pair_flg() {
-        false => |out: &mut dyn Write, _: &str, o: &str| writeln!(out, "{}", o).unwrap(),
-        true => |out: &mut dyn Write, i: &str, o: &str| writeln!(out, "{} {}", i, o).unwrap(),
-    };
+    // function for output to stdout
+    let print_line = exe::get_print_line(&params);
 
     // calc UTC
     let mut someone_is_err = false;

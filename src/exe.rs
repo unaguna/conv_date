@@ -45,6 +45,20 @@ pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUt
     leaps
 }
 
+/// Serve a method for output to stdout
+///
+/// # Arguments
+/// * `params` - Parameters of execution
+///
+/// # Returns
+/// A method for output to stdout. It requires arguments which it needs for output.
+pub fn get_print_line(params: &Parameters) -> fn(&mut dyn Write, &str, &str) -> () {
+    match params.io_pair_flg() {
+        false => |out: &mut dyn Write, _: &str, o: &str| writeln!(out, "{}", o).unwrap(),
+        true => |out: &mut dyn Write, i: &str, o: &str| writeln!(out, "{} {}", i, o).unwrap(),
+    }
+}
+
 /// Command arguments of convdate
 pub struct Arguments<'a> {
     matches: ArgMatches<'a>,
