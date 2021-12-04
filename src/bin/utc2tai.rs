@@ -1,5 +1,5 @@
-extern crate conv_date;
-use conv_date::exe::utc2tai::main_inner;
+extern crate convdate;
+use convdate::exe::utc2tai::main_inner;
 use std::{env, io};
 
 fn main() {

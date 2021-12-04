@@ -45,7 +45,7 @@ pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUt
     leaps
 }
 
-/// Command arguments of conv_date
+/// Command arguments of convdate
 pub struct Arguments<'a> {
     matches: ArgMatches<'a>,
     leaps_dt_fmt: Option<String>,
@@ -122,7 +122,7 @@ impl Arguments<'_> {
     }
 }
 
-/// Environment variables which conv_date uses
+/// Environment variables which convdate uses
 pub struct EnvValues {
     dt_fmt: Option<String>,
     leaps_dt_fmt: Option<String>,
