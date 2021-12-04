@@ -55,6 +55,7 @@ pub fn main_inner(
 mod tests {
     use super::super::testmod;
     use super::main_inner;
+    use crate::exe;
     use std::collections::HashMap;
 
     const EXE_NAME: &str = "utc2tt";
@@ -114,6 +115,193 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
+    /// Test error when input datetimes are illegal.
+    #[test]
+    fn test_input_dt_illegal_against_default_dt_fmt() {
+        let test_dir = testmod::tmp_dir(Some("")).unwrap();
+        let leaps_table_path = testmod::tmp_leaps_table(
+            &test_dir,
+            &vec![
+                "2012-07-01T00:00:00 5",
+                "2015-07-01T00:00:00 6",
+                "2017-01-01T00:00:00 7",
+            ],
+        )
+        .unwrap();
+
+        let args = vec![
+            EXE_NAME,
+            "2015-06-30T23:59:59.000",
+            "2015-06-30T23:59:60.001",
+            "2015-07-01T00:00:00.002",
+            "2015-07-01T00:00:01.003",
+            "2015-07-01T00:00:02.004",
+            "2016-12-3123:59:59",
+            "2016-12-3123:59:60",
+            "2017-01-01T00:00:00",
+            "2017-01-01T00:00:01",
+            "2017-01-01T00:00:02",
+        ];
+        let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+
+        assert_eq!(exec_code, 2);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-07-01T00:00:04.000\n\
+            2015-07-01T00:00:05.001\n\
+            2015-07-01T00:00:06.002\n\
+            2015-07-01T00:00:07.003\n\
+            2015-07-01T00:00:08.004\n\
+            2017-01-01T00:00:07.000\n\
+            2017-01-01T00:00:08.000\n\
+            2017-01-01T00:00:09.000\n"
+        );
+        assert_eq!(
+            String::from_utf8_lossy(&stderr_buf),
+            format!(
+                "{}: {}\n{}: {}\n",
+                exe::exe_name(),
+                "Unparseable datetime: 2016-12-3123:59:59",
+                exe::exe_name(),
+                "Unparseable datetime: 2016-12-3123:59:60"
+            )
+        );
+    }
+
+    /// Test error when leaps data are illegal.
+    #[test]
+    fn test_leaps_illegal() {
+        let test_dir = testmod::tmp_dir(Some("")).unwrap();
+        let leaps_table_path = testmod::tmp_leaps_table(
+            &test_dir,
+            &vec![
+                "2012-07-01T00:00:00 5",
+                "2015-07-01T00:00:00 A",
+                "2017-01-01T00:00:00 7",
+            ],
+        )
+        .unwrap();
+
+        let args = vec![
+            EXE_NAME,
+            "2015-06-30T23:59:59.000",
+            "2015-06-30T23:59:60.001",
+            "2015-07-01T00:00:00.002",
+            "2015-07-01T00:00:01.003",
+            "2015-07-01T00:00:02.004",
+            "2016-12-31T23:59:59",
+            "2016-12-31T23:59:60",
+            "2017-01-01T00:00:00",
+            "2017-01-01T00:00:01",
+            "2017-01-01T00:00:02",
+        ];
+        let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+
+        assert_eq!(exec_code, 1);
+        assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
+        assert_eq!(
+            String::from_utf8_lossy(&stderr_buf),
+            format!(
+                "{}: {}\n",
+                exe::exe_name(),
+                "Illegal leap definition: 2015-07-01T00:00:00 A"
+            )
+        );
+    }
+
+    /// Test error when leaps datetimes are illegal.
+    #[test]
+    fn test_leaps_dt_illegal_against_default_leaps_dt_fmt() {
+        let test_dir = testmod::tmp_dir(Some("")).unwrap();
+        let leaps_table_path = testmod::tmp_leaps_table(
+            &test_dir,
+            &vec![
+                "2012-07-01T00:00:00 5",
+                "2015-07-0100:00:00 6",
+                "2017-01-01T00:00:00 7",
+            ],
+        )
+        .unwrap();
+
+        let args = vec![
+            EXE_NAME,
+            "2015-06-30T23:59:59.000",
+            "2015-06-30T23:59:60.001",
+            "2015-07-01T00:00:00.002",
+            "2015-07-01T00:00:01.003",
+            "2015-07-01T00:00:02.004",
+            "2016-12-31T23:59:59",
+            "2016-12-31T23:59:60",
+            "2017-01-01T00:00:00",
+            "2017-01-01T00:00:01",
+            "2017-01-01T00:00:02",
+        ];
+        let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+
+        assert_eq!(exec_code, 1);
+        assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
+        assert_eq!(
+            String::from_utf8_lossy(&stderr_buf),
+            format!(
+                "{}: {}\n",
+                exe::exe_name(),
+                "Illegal leap definition (datetime): 2015-07-0100:00:00"
+            )
+        );
+    }
+
+    /// Test error when an environment variable LEAPS_TABLE is unexist path
+    #[test]
+    fn test_env_leaps_table_unexist() {
+        let leaps_table_path = "/tmp/dummy/unexists.txt";
+
+        let args = vec![
+            EXE_NAME,
+            "2015-06-30T23:59:59.000",
+            "2015-06-30T23:59:60.001",
+            "2015-07-01T00:00:00.002",
+            "2015-07-01T00:00:01.003",
+            "2015-07-01T00:00:02.004",
+            "2016-12-31T23:59:59",
+            "2016-12-31T23:59:60",
+            "2017-01-01T00:00:00",
+            "2017-01-01T00:00:01",
+            "2017-01-01T00:00:02",
+        ];
+        let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path)]);
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+
+        assert_eq!(exec_code, 1);
+        assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
+        assert_eq!(
+            String::from_utf8_lossy(&stderr_buf),
+            format!(
+                "{}: {}\n",
+                exe::exe_name(),
+                "The leaps table file isn't available: /tmp/dummy/unexists.txt"
+            )
+        );
+    }
+
     /// Test an argunent --leaps-table.
     #[test]
     fn test_arg_leaps_table() {
@@ -165,6 +353,45 @@ mod tests {
             2017-01-01T00:00:09.000\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
+    }
+
+    /// Test error when an argunent --leaps-table is unexist path
+    #[test]
+    fn test_arg_leaps_table_unexist() {
+        let leaps_table_path = "/tmp/dummy/unexists.txt";
+
+        let args = vec![
+            EXE_NAME,
+            "2015-06-30T23:59:59",
+            "2015-06-30T23:59:60",
+            "2015-07-01T00:00:00",
+            "2015-07-01T00:00:01",
+            "2015-07-01T00:00:02",
+            "2016-12-31T23:59:59",
+            "2016-12-31T23:59:60",
+            "2017-01-01T00:00:00",
+            "2017-01-01T00:00:01",
+            "2017-01-01T00:00:02",
+            "--leaps-table",
+            leaps_table_path,
+        ];
+        let env_vars: HashMap<&str, &str> = HashMap::from([]);
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+
+        assert_eq!(exec_code, 1);
+        assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
+        assert_eq!(
+            String::from_utf8_lossy(&stderr_buf),
+            format!(
+                "{}: {}\n",
+                exe::exe_name(),
+                "The leaps table file isn't available: /tmp/dummy/unexists.txt"
+            )
+        );
     }
 
     /// Test that an argument --leaps-table has a priority to an environment variable LEAPS_TABLE.
