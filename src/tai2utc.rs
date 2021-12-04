@@ -80,7 +80,7 @@ fn tai2utc_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTi
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::{TimeZone, Utc};
+    use chrono::NaiveDate;
     use rstest::*;
 
     const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
@@ -108,23 +108,23 @@ mod tests {
     fn test_tai2utc(#[case] expected_utc: &str, #[case] tai: &str) {
         let leaps = vec![
             LeapUtc {
-                datetime: Utc.ymd(2015, 7, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
             LeapUtc {
-                datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 37,
             },
             LeapUtc {
-                datetime: Utc.ymd(2018, 1, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2018, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
             LeapUtc {
-                datetime: Utc.ymd(2019, 1, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2019, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 38,
             },
             LeapUtc {
-                datetime: Utc.ymd(2020, 1, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2020, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
         ];

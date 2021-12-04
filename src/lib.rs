@@ -4,7 +4,7 @@ mod tai2utc;
 mod tt;
 mod utc2tai;
 use anyhow::Result;
-use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc};
+use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike};
 use error::Error;
 pub use tai2utc::tai2utc;
 pub use tt::{tai2tt, tt2tai};
@@ -14,7 +14,7 @@ const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
 
 pub struct LeapUtc {
     // うるう秒によってずれるタイミング (UTC)
-    pub datetime: DateTime<Utc>,
+    pub datetime: NaiveDateTime,
     // うるう秒による累積のずれ (TAI - UTC)
     pub diff_seconds: i64,
 }
@@ -25,7 +25,7 @@ impl LeapUtc {
         if parts.len() != 2 {
             Err(Error::LeapTableParseError(line.to_string()))?;
         }
-        let datetime = Utc.datetime_from_str(parts[0], fmt);
+        let datetime = NaiveDateTime::parse_from_str(parts[0], fmt);
         let datetime = match datetime {
             Ok(datetime) => datetime,
             Err(_e) => {
@@ -47,7 +47,7 @@ impl LeapUtc {
 /// Convert datetime to naive without leap
 ///
 /// Nanoseconds that exceed 1000000 to represent leap seconds are added to seconds.
-fn normalize_leap(datetime: &DateTime<Utc>) -> NaiveDateTime {
+fn normalize_leap(datetime: &NaiveDateTime) -> NaiveDateTime {
     return NaiveDate::from_ymd(datetime.year(), datetime.month(), datetime.day()).and_hms(
         datetime.hour(),
         datetime.minute(),
