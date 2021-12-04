@@ -46,6 +46,16 @@ impl LeapUtc {
             diff_seconds,
         })
     }
+
+    pub fn from_lines(
+        lines: impl IntoIterator<Item = impl AsRef<str>>,
+        fmt: &str,
+    ) -> Result<Vec<LeapUtc>> {
+        lines
+            .into_iter()
+            .map(|line| LeapUtc::from_line(line.as_ref(), " ", fmt))
+            .collect::<Result<Vec<_>>>()
+    }
 }
 
 /// Convert datetime to naive without leap

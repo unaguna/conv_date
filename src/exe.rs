@@ -38,11 +38,11 @@ pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUt
         leaps_file.to_str().unwrap()
     ))?;
 
-    let leaps: Result<Vec<_>, _> = BufReader::new(leaps_file)
+    let leaps_lines = BufReader::new(leaps_file)
         .lines()
-        .map(|line| LeapUtc::from_line(&line?, " ", datetime_fmt))
-        .collect();
-    leaps
+        .collect::<Result<Vec<_>, _>>()?;
+
+    LeapUtc::from_lines(leaps_lines, datetime_fmt)
 }
 
 /// Serve a method for output to stdout
