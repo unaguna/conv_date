@@ -1,5 +1,5 @@
 use super::{Arguments, EnvValues, Parameters};
-use crate::{error::Error, exe, tai2utc, tt2tai};
+use crate::{exe, tt2utc};
 use std::ffi::OsString;
 use std::io::Write;
 
@@ -31,15 +31,9 @@ pub fn main_inner(
     // calc UTC
     let mut someone_is_err = false;
     for in_tt in args.get_datetimes() {
-        let utc = tt2tai(in_tt, params.get_dt_fmt())
-            .and_then(|tai| tai2utc(&tai, &leaps, params.get_dt_fmt()));
+        let utc = tt2utc(in_tt, &leaps, params.get_dt_fmt());
 
         match utc {
-            Err(Error::DatetimeTooLowError(_)) => {
-                // 多段階で変換を行う場合、中間の日時文字列がエラーメッセージに使われている場合があるため、入力された日時文字列に置き換える。
-                someone_is_err = true;
-                exe::print_err(stderr, &Error::DatetimeTooLowError(in_tt.to_string()));
-            }
             Err(e) => {
                 someone_is_err = true;
                 exe::print_err(stderr, &e)
