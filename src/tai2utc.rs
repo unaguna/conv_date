@@ -65,7 +65,7 @@ pub fn tai2utc(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String
     Ok(utc.format(dt_fmt).to_string())
 }
 
-fn tai2utc_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
+pub fn tai2utc_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
     let leaps = utc_leaps_to_tai_leaps(leaps);
     return pick_dominant_leap(datetime, &leaps).map(|leap| {
         let mut datetime_tmp = datetime.clone();

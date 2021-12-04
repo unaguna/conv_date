@@ -33,7 +33,7 @@ pub fn utc2tai(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String
     Ok(tai.format(dt_fmt).to_string())
 }
 
-fn utc2tai_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
+pub fn utc2tai_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
     let datetime_nm = normalize_leap(datetime);
 
     return pick_dominant_leap(datetime, leaps)

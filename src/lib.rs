@@ -6,9 +6,9 @@ mod utc2tai;
 use anyhow::Result;
 use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike};
 use error::Error;
-pub use tai2utc::tai2utc;
-pub use tt::{tai2tt, tt2tai};
-pub use utc2tai::utc2tai;
+pub use tai2utc::{tai2utc, tai2utc_dt};
+pub use tt::{tai2tt, tai2tt_dt, tt2tai, tt2tai_dt};
+pub use utc2tai::{utc2tai, utc2tai_dt};
 
 const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
 
