@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::env;
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 pub mod tai2utc;
 pub mod tt2utc;
@@ -20,8 +20,8 @@ pub const EXIT_CODE_OK: i32 = 0;
 pub const EXIT_CODE_NG: i32 = 1;
 pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
 
-pub fn print_err(err: &dyn std::fmt::Display) {
-    eprintln!("{}: {}", exe_name(), err)
+pub fn print_err(stderr: &mut impl Write, err: &dyn std::fmt::Display) {
+    writeln!(stderr, "{}: {}", exe_name(), err).unwrap();
 }
 
 pub fn exe_name() -> String {

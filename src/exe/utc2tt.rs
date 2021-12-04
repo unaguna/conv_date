@@ -7,6 +7,7 @@ pub fn main_inner(
     args: impl IntoIterator<Item = impl Into<OsString> + Clone>,
     env_vars: impl IntoIterator<Item = (impl ToString, impl ToString)>,
     stdout: &mut impl Write,
+    stderr: &mut impl Write,
 ) -> i32 {
     let args = Arguments::new("Converter from UTC to TT", args);
     let env_vars = EnvValues::new(env_vars);
@@ -19,7 +20,7 @@ pub fn main_inner(
     let leaps = match leaps {
         Ok(leap) => leap,
         Err(e) => {
-            exe::print_err(&e);
+            exe::print_err(stderr, &e);
             return exe::EXIT_CODE_NG;
         }
     };
@@ -39,11 +40,11 @@ pub fn main_inner(
             Err(Error::DatetimeTooLowError(_)) => {
                 // 多段階で変換を行う場合、中間の日時文字列がエラーメッセージに使われている場合があるため、入力された日時文字列に置き換える。
                 someone_is_err = true;
-                exe::print_err(&Error::DatetimeTooLowError(in_utc.to_string()));
+                exe::print_err(stderr, &Error::DatetimeTooLowError(in_utc.to_string()));
             }
             Err(e) => {
                 someone_is_err = true;
-                exe::print_err(&e)
+                exe::print_err(stderr, &e)
             }
             Ok(tt) => print_line(stdout, in_utc, &tt),
         }
@@ -97,9 +98,10 @@ mod tests {
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -115,6 +117,7 @@ mod tests {
             2017-01-01T00:00:40.184\n\
             2017-01-01T00:00:41.184\n"
         );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
     /// Test an argunent --leaps-table.
@@ -148,9 +151,10 @@ mod tests {
         ];
         let env_vars: HashMap<&str, &str> = HashMap::from([]);
         let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -166,6 +170,7 @@ mod tests {
             2017-01-01T00:00:40.184\n\
             2017-01-01T00:00:41.184\n"
         );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
     /// Test that an argument --leaps-table has a priority to an environment variable LEAPS_TABLE.
@@ -201,9 +206,10 @@ mod tests {
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", dummy_leaps_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -219,6 +225,7 @@ mod tests {
             2017-01-01T00:00:40.184\n\
             2017-01-01T00:00:41.184\n"
         );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
     /// Test an argunent --dt-fmt.
@@ -252,9 +259,10 @@ mod tests {
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -270,6 +278,7 @@ mod tests {
             20170101000040\n\
             20170101000041\n"
         );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
     /// Test an environment variable DT_FMT.
@@ -304,9 +313,12 @@ mod tests {
             ("DT_FMT", "%Y%m%d%H%M%S"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+
+        assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
             "20150701000036\n\
@@ -320,8 +332,7 @@ mod tests {
             20170101000040\n\
             20170101000041\n"
         );
-
-        assert_eq!(exec_code, 0);
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
     /// Test that an argunent --dt-fmt has a priority to an environment variable DT_FMT.
@@ -358,9 +369,10 @@ mod tests {
             ("DT_FMT", "%Y%m%d%H%M%S"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -376,6 +388,7 @@ mod tests {
             2017/01/01-00:00:40\n\
             2017/01/01-00:00:41\n"
         );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
     /// Test an argunent --leaps-dt-fmt.
@@ -409,9 +422,10 @@ mod tests {
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -427,6 +441,7 @@ mod tests {
             2017-01-01T00:00:40.184\n\
             2017-01-01T00:00:41.184\n"
         );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
     /// Test an environment variable LEAPS_DT_FMT.
@@ -461,9 +476,10 @@ mod tests {
             ("LEAPS_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -479,6 +495,7 @@ mod tests {
             2017-01-01T00:00:40.184\n\
             2017-01-01T00:00:41.184\n"
         );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
     /// Test that an argunent --leaps-dt-fmt has a priority to an environment variable LEAPS_DT_FMT
@@ -515,9 +532,10 @@ mod tests {
             ("LEAPS_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf);
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -533,5 +551,6 @@ mod tests {
             2017-01-01T00:00:40.184\n\
             2017-01-01T00:00:41.184\n"
         );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 }
