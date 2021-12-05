@@ -91,9 +91,9 @@ mod tests {
                 diff_seconds: 36,
             },
         ];
-        let tai = utc2tai(&utc, &leaps, DT_FMT).unwrap();
+        let tai = utc2tai(&utc, &leaps, DT_FMT);
 
-        assert_eq!(tai, expected_tai);
+        assert_eq!(tai, Ok(expected_tai.to_string()));
     }
 
     #[test]

@@ -74,9 +74,9 @@ mod tests {
                 diff_seconds: 36,
             },
         ];
-        let utc = tt2utc(&tt, &leaps, DT_FMT).unwrap();
+        let utc = tt2utc(&tt, &leaps, DT_FMT);
 
-        assert_eq!(utc, expected_utc);
+        assert_eq!(utc, Ok(expected_utc.to_string()));
     }
 
     #[test]

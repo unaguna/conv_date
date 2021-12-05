@@ -66,9 +66,9 @@ mod tests {
                 diff_seconds: 36,
             },
         ];
-        let tai = utc2tt(&utc, &leaps, DT_FMT).unwrap();
+        let tai = utc2tt(&utc, &leaps, DT_FMT);
 
-        assert_eq!(tai, expected_tt);
+        assert_eq!(tai, Ok(expected_tt.to_string()));
     }
 
     #[test]
