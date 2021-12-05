@@ -9,6 +9,7 @@
 //! This crate provide some features to above binary crates.
 
 pub mod error;
+#[doc(hidden)]
 pub mod exe;
 mod leapstbl;
 mod tai2utc;
