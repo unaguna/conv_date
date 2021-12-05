@@ -72,14 +72,14 @@ mod tests {
         #[case] expected_dt: NaiveDateTime,
         #[case] expected_diff: i64,
     ) {
-        let result = LeapUtc::from_line(line, sep, fmt).unwrap();
+        let result = LeapUtc::from_line(line, sep, fmt);
 
         assert_eq!(
             result,
-            LeapUtc {
+            Ok(LeapUtc {
                 datetime: expected_dt,
                 diff_seconds: expected_diff
-            }
+            })
         );
     }
 }
