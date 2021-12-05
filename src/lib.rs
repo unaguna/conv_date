@@ -2,19 +2,23 @@ pub mod error;
 pub mod exe;
 mod tai2utc;
 mod tt;
+mod tt2utc;
 mod utc2tai;
+mod utc2tt;
 use anyhow::Result;
-use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc};
+use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike};
 use error::Error;
-pub use tai2utc::tai2utc;
-pub use tt::{tai2tt, tt2tai};
-pub use utc2tai::utc2tai;
+pub use tai2utc::{tai2utc, tai2utc_dt};
+pub use tt::{tai2tt, tai2tt_dt, tt2tai, tt2tai_dt};
+pub use tt2utc::{tt2utc, tt2utc_dt};
+pub use utc2tai::{utc2tai, utc2tai_dt};
+pub use utc2tt::{utc2tt, utc2tt_dt};
 
 const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
 
 pub struct LeapUtc {
     // うるう秒によってずれるタイミング (UTC)
-    pub datetime: DateTime<Utc>,
+    pub datetime: NaiveDateTime,
     // うるう秒による累積のずれ (TAI - UTC)
     pub diff_seconds: i64,
 }
@@ -25,7 +29,7 @@ impl LeapUtc {
         if parts.len() != 2 {
             Err(Error::LeapTableParseError(line.to_string()))?;
         }
-        let datetime = Utc.datetime_from_str(parts[0], fmt);
+        let datetime = NaiveDateTime::parse_from_str(parts[0], fmt);
         let datetime = match datetime {
             Ok(datetime) => datetime,
             Err(_e) => {
@@ -42,12 +46,22 @@ impl LeapUtc {
             diff_seconds,
         })
     }
+
+    pub fn from_lines(
+        lines: impl IntoIterator<Item = impl AsRef<str>>,
+        fmt: &str,
+    ) -> Result<Vec<LeapUtc>> {
+        lines
+            .into_iter()
+            .map(|line| LeapUtc::from_line(line.as_ref(), " ", fmt))
+            .collect::<Result<Vec<_>>>()
+    }
 }
 
 /// Convert datetime to naive without leap
 ///
 /// Nanoseconds that exceed 1000000 to represent leap seconds are added to seconds.
-fn normalize_leap(datetime: &DateTime<Utc>) -> NaiveDateTime {
+fn normalize_leap(datetime: &NaiveDateTime) -> NaiveDateTime {
     return NaiveDate::from_ymd(datetime.year(), datetime.month(), datetime.day()).and_hms(
         datetime.hour(),
         datetime.minute(),

@@ -1,6 +1,6 @@
 use crate::{error::Error, normalize_leap, LeapUtc};
 use anyhow::Result;
-use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
+use chrono::{Duration, NaiveDateTime};
 
 /// Pick the leap object to use for calc tai from the datetime.
 ///
@@ -9,7 +9,7 @@ use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
 /// * `datetime` - A datetime to convert to tai
 /// * `leaps` - A list of leap objects
 fn pick_dominant_leap<'a>(
-    datetime: &DateTime<Utc>,
+    datetime: &NaiveDateTime,
     leaps: &'a [LeapUtc],
 ) -> Result<&'a LeapUtc, Error> {
     // 線形探索
@@ -27,14 +27,13 @@ fn pick_dominant_leap<'a>(
 }
 
 pub fn utc2tai(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String, Error> {
-    let datetime = Utc
-        .datetime_from_str(datetime, dt_fmt)
+    let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
     let tai = utc2tai_dt(&datetime, leaps)?;
     Ok(tai.format(dt_fmt).to_string())
 }
 
-fn utc2tai_dt(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
+pub fn utc2tai_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
     let datetime_nm = normalize_leap(datetime);
 
     return pick_dominant_leap(datetime, leaps)
@@ -44,7 +43,7 @@ fn utc2tai_dt(datetime: &DateTime<Utc>, leaps: &[LeapUtc]) -> Result<NaiveDateTi
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::{TimeZone, Utc};
+    use chrono::NaiveDate;
     use rstest::*;
 
     const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
@@ -72,23 +71,23 @@ mod tests {
     fn test_utc2tai(#[case] utc: &str, #[case] expected_tai: &str) {
         let leaps = vec![
             LeapUtc {
-                datetime: Utc.ymd(2015, 7, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
             LeapUtc {
-                datetime: Utc.ymd(2017, 1, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 37,
             },
             LeapUtc {
-                datetime: Utc.ymd(2018, 1, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2018, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
             LeapUtc {
-                datetime: Utc.ymd(2019, 1, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2019, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 38,
             },
             LeapUtc {
-                datetime: Utc.ymd(2020, 1, 1).and_hms(0, 0, 0),
+                datetime: NaiveDate::from_ymd(2020, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
         ];

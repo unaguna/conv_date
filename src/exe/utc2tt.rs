@@ -1,5 +1,5 @@
 use super::{Arguments, EnvValues, Parameters};
-use crate::{error::Error, exe, tai2tt, utc2tai};
+use crate::{exe, utc2tt};
 use std::ffi::OsString;
 use std::io::Write;
 
@@ -25,23 +25,15 @@ pub fn main_inner(
         }
     };
 
-    let print_line: fn(&mut dyn Write, &str, &str) -> () = match params.io_pair_flg() {
-        false => |out: &mut dyn Write, _: &str, o: &str| writeln!(out, "{}", o).unwrap(),
-        true => |out: &mut dyn Write, i: &str, o: &str| writeln!(out, "{} {}", i, o).unwrap(),
-    };
+    // function for output to stdout
+    let print_line = exe::get_print_line(&params);
 
     // calc TT
     let mut someone_is_err = false;
     for in_utc in args.get_datetimes() {
-        let tt = utc2tai(in_utc, &leaps, params.get_dt_fmt())
-            .and_then(|tai| tai2tt(&tai, params.get_dt_fmt()));
+        let tt = utc2tt(in_utc, &leaps, params.get_dt_fmt());
 
         match tt {
-            Err(Error::DatetimeTooLowError(_)) => {
-                // 多段階で変換を行う場合、中間の日時文字列がエラーメッセージに使われている場合があるため、入力された日時文字列に置き換える。
-                someone_is_err = true;
-                exe::print_err(stderr, &Error::DatetimeTooLowError(in_utc.to_string()));
-            }
             Err(e) => {
                 someone_is_err = true;
                 exe::print_err(stderr, &e)

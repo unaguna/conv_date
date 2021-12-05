@@ -11,7 +11,7 @@ pub fn tt2tai(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
     Ok(tai.format(dt_fmt).to_string())
 }
 
-fn tt2tai_dt(datetime: &NaiveDateTime) -> NaiveDateTime {
+pub fn tt2tai_dt(datetime: &NaiveDateTime) -> NaiveDateTime {
     return datetime.clone() - Duration::milliseconds(D_TT_TAI_MS);
 }
 
@@ -22,6 +22,6 @@ pub fn tai2tt(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
     Ok(tt.format(dt_fmt).to_string())
 }
 
-fn tai2tt_dt(datetime: &NaiveDateTime) -> NaiveDateTime {
+pub fn tai2tt_dt(datetime: &NaiveDateTime) -> NaiveDateTime {
     return datetime.clone() + Duration::milliseconds(D_TT_TAI_MS);
 }
