@@ -6,4 +6,4 @@ utc2tai = "run --bin utc2tai --"
 utc2tt = "run --bin utc2tt --"
 
 [env]
-LEAPS_TABLE = "./resources/leaps.txt"
+LEAPS_TABLE = { value = "resources/leaps.txt", relative = true }
