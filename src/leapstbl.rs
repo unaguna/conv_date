@@ -78,4 +78,25 @@ mod tests {
             })
         );
     }
+
+    #[test]
+    fn test_leaps_utc_from_illegal_line() {
+        let line = "2017-01-02T11:22:33 15 1";
+        let result = LeapUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
+
+        assert_eq!(result, Err(Error::LeapTableParseError(line.to_string())))
+    }
+
+    #[test]
+    fn test_leaps_utc_from_illegal_datetime() {
+        let line = "2017-01-0211:22:33 15";
+        let result = LeapUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
+
+        assert_eq!(
+            result,
+            Err(Error::LeapTableDatetimeParseError(
+                "2017-01-0211:22:33".to_string()
+            ))
+        )
+    }
 }
