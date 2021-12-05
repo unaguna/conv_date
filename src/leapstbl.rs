@@ -2,6 +2,7 @@ use crate::error::Error;
 use anyhow::Result;
 use chrono::NaiveDateTime;
 
+#[derive(Debug, PartialEq)]
 pub struct LeapUtc {
     // うるう秒によってずれるタイミング (UTC)
     pub datetime: NaiveDateTime,
@@ -41,5 +42,45 @@ impl LeapUtc {
             .into_iter()
             .map(|line| LeapUtc::from_line(line.as_ref(), " ", fmt))
             .collect::<Result<Vec<_>>>()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::{NaiveDate, NaiveDateTime};
+    use rstest::*;
+
+    #[rstest]
+    #[case(
+        "2017-01-02T11:22:33 15",
+        " ",
+        "%Y-%m-%dT%H:%M:%S",
+        NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33),
+        15
+    )]
+    #[case(
+        "20170102112233,15",
+        ",",
+        "%Y%m%d%H%M%S",
+        NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33),
+        15
+    )]
+    fn test_leaps_utc_from_line(
+        #[case] line: &str,
+        #[case] sep: &str,
+        #[case] fmt: &str,
+        #[case] expected_dt: NaiveDateTime,
+        #[case] expected_diff: i64,
+    ) {
+        let result = LeapUtc::from_line(line, sep, fmt).unwrap();
+
+        assert_eq!(
+            result,
+            LeapUtc {
+                datetime: expected_dt,
+                diff_seconds: expected_diff
+            }
+        );
     }
 }
