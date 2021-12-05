@@ -1,2 +1,5 @@
 [alias]
 d = "doc --no-deps"
+
+[env]
+LEAPS_TABLE = "./resources/leaps.txt"
