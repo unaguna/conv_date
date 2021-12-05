@@ -111,10 +111,16 @@ mod tests {
     #[test]
     fn test_error_on_too_low_datetime() {
         let utc = "2015-06-30T23:59:60.999";
-        let leaps = vec![LeapUtc {
-            datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
-            diff_seconds: 36,
-        }];
+        let leaps = vec![
+            LeapUtc {
+                datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
+                diff_seconds: 36,
+            },
+            LeapUtc {
+                datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
+                diff_seconds: 37,
+            },
+        ];
         let error = utc2tai(&utc, &leaps, DT_FMT);
 
         assert_eq!(
