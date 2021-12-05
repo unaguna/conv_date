@@ -95,4 +95,33 @@ mod tests {
 
         assert_eq!(tai, expected_tai);
     }
+
+    #[test]
+    fn test_error_on_illegal_format() {
+        let utc = "2019-12-31 23:59:57.000";
+        let leaps = vec![LeapUtc {
+            datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
+            diff_seconds: 36,
+        }];
+        let error = utc2tai(&utc, &leaps, DT_FMT);
+
+        assert_eq!(error, Err(Error::DatetimeParseError(utc.to_string())))
+    }
+
+    #[test]
+    fn test_error_on_too_low_datetime() {
+        let utc = "2015-06-30T23:59:60.999";
+        let leaps = vec![LeapUtc {
+            datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
+            diff_seconds: 36,
+        }];
+        let error = utc2tai(&utc, &leaps, DT_FMT);
+
+        assert_eq!(
+            error,
+            Err(Error::DatetimeTooLowError(
+                "2015-06-30 23:59:60.999".to_string()
+            ))
+        )
+    }
 }
