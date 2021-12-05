@@ -1,5 +1,4 @@
-use crate::{LeapUtc, DT_FMT};
-use anyhow::{Context, Result};
+use crate::{error::Error, LeapUtc, DT_FMT};
 use clap::{App, Arg, ArgMatches, Values};
 use std::collections::HashMap;
 use std::env;
@@ -32,15 +31,14 @@ pub fn exe_name() -> String {
         .to_string();
 }
 
-pub fn load_leaps(leaps_file: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>> {
-    let leaps_file = File::open(leaps_file).context(format!(
-        "The leaps table file isn't available: {}",
-        leaps_file.to_str().unwrap()
-    ))?;
+pub fn load_leaps(leaps_file_path: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>, Error> {
+    let leaps_file = File::open(leaps_file_path)
+        .map_err(|_| Error::LeapsTableIOError(leaps_file_path.clone()))?;
 
     let leaps_lines = BufReader::new(leaps_file)
         .lines()
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| Error::LeapsTableNotTextError(leaps_file_path.clone()))?;
 
     LeapUtc::from_lines(leaps_lines, datetime_fmt)
 }

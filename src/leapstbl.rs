@@ -1,5 +1,4 @@
 use crate::error::Error;
-use anyhow::Result;
 use chrono::NaiveDateTime;
 
 #[derive(Debug, PartialEq)]
@@ -11,23 +10,19 @@ pub struct LeapUtc {
 }
 
 impl LeapUtc {
-    pub fn from_line(line: &str, sep: &str, fmt: &str) -> Result<LeapUtc> {
+    pub fn from_line(line: &str, sep: &str, fmt: &str) -> Result<LeapUtc, Error> {
         let parts: Vec<&str> = line.splitn(3, sep).collect();
         if parts.len() != 2 {
             Err(Error::LeapTableParseError(line.to_string()))?;
         }
-        let datetime = NaiveDateTime::parse_from_str(parts[0], fmt);
-        let datetime = match datetime {
-            Ok(datetime) => datetime,
-            Err(_e) => {
-                return Err(Error::LeapTableDatetimeParseError(parts[0].to_string()))?;
-            }
-        };
-        let diff_seconds: Result<i64, _> = parts[1].parse();
-        let diff_seconds = match diff_seconds {
-            Ok(diff_seconds) => diff_seconds,
-            Err(_e) => return Err(Error::LeapTableParseError(line.to_string()))?,
-        };
+
+        let datetime = NaiveDateTime::parse_from_str(parts[0], fmt)
+            .map_err(|_| Error::LeapTableDatetimeParseError(parts[0].to_string()))?;
+
+        let diff_seconds: i64 = parts[1]
+            .parse()
+            .map_err(|_| Error::LeapTableParseError(line.to_string()))?;
+
         Ok(LeapUtc {
             datetime,
             diff_seconds,
@@ -37,11 +32,11 @@ impl LeapUtc {
     pub fn from_lines(
         lines: impl IntoIterator<Item = impl AsRef<str>>,
         fmt: &str,
-    ) -> Result<Vec<LeapUtc>> {
+    ) -> Result<Vec<LeapUtc>, Error> {
         lines
             .into_iter()
             .map(|line| LeapUtc::from_line(line.as_ref(), " ", fmt))
-            .collect::<Result<Vec<_>>>()
+            .collect::<Result<Vec<_>, _>>()
     }
 }
 
@@ -73,14 +68,35 @@ mod tests {
         #[case] expected_dt: NaiveDateTime,
         #[case] expected_diff: i64,
     ) {
-        let result = LeapUtc::from_line(line, sep, fmt).unwrap();
+        let result = LeapUtc::from_line(line, sep, fmt);
 
         assert_eq!(
             result,
-            LeapUtc {
+            Ok(LeapUtc {
                 datetime: expected_dt,
                 diff_seconds: expected_diff
-            }
+            })
         );
+    }
+
+    #[test]
+    fn test_leaps_utc_from_illegal_line() {
+        let line = "2017-01-02T11:22:33 15 1";
+        let result = LeapUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
+
+        assert_eq!(result, Err(Error::LeapTableParseError(line.to_string())))
+    }
+
+    #[test]
+    fn test_leaps_utc_from_illegal_datetime() {
+        let line = "2017-01-0211:22:33 15";
+        let result = LeapUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
+
+        assert_eq!(
+            result,
+            Err(Error::LeapTableDatetimeParseError(
+                "2017-01-0211:22:33".to_string()
+            ))
+        )
     }
 }
