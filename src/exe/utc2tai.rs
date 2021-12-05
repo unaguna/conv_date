@@ -12,7 +12,7 @@ pub fn main_inner(
     let args = Arguments::new("Converter from UTC to TAI", args);
     let env_vars = EnvValues::new(env_vars);
 
-    // Analize the arguments and the environment variables.
+    // Analyze the arguments and the environment variables.
     let params = Parameters::new(&args, &env_vars);
 
     // load leap list
@@ -165,9 +165,9 @@ mod tests {
                 exe::exe_name(),
                 "The datetime is too low: 2010-07-01 00:00:00.002",
                 exe::exe_name(),
-                "Unparseable datetime: 2016-12-3123:59:59",
+                "Cannot parse the datetime: 2016-12-3123:59:59",
                 exe::exe_name(),
-                "Unparseable datetime: 2016-12-3123:59:60"
+                "Cannot parse the datetime: 2016-12-3123:59:60"
             )
         );
     }
@@ -264,10 +264,10 @@ mod tests {
         );
     }
 
-    /// Test error when an environment variable LEAPS_TABLE is unexist path
+    /// Test error when an environment variable LEAPS_TABLE is a path which is not exists
     #[test]
-    fn test_env_leaps_table_unexist() {
-        let leaps_table_path = "/tmp/dummy/unexists.txt";
+    fn test_env_leaps_table_not_exist() {
+        let leaps_table_path = "/tmp/dummy/not_exists.txt";
 
         let args = vec![
             EXE_NAME,
@@ -296,12 +296,12 @@ mod tests {
             format!(
                 "{}: {}\n",
                 exe::exe_name(),
-                "The leaps table file isn't available: /tmp/dummy/unexists.txt"
+                "The leaps table file isn't available: /tmp/dummy/not_exists.txt"
             )
         );
     }
 
-    /// Test an argunent --leaps-table.
+    /// Test an argument --leaps-table.
     #[test]
     fn test_arg_leaps_table() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -354,10 +354,10 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test error when an argunent --leaps-table is unexist path
+    /// Test error when an argument --leaps-table is a path which is not exists
     #[test]
-    fn test_arg_leaps_table_unexist() {
-        let leaps_table_path = "/tmp/dummy/unexists.txt";
+    fn test_arg_leaps_table_not_exist() {
+        let leaps_table_path = "/tmp/dummy/not_exists.txt";
 
         let args = vec![
             EXE_NAME,
@@ -388,7 +388,7 @@ mod tests {
             format!(
                 "{}: {}\n",
                 exe::exe_name(),
-                "The leaps table file isn't available: /tmp/dummy/unexists.txt"
+                "The leaps table file isn't available: /tmp/dummy/not_exists.txt"
             )
         );
     }
@@ -448,7 +448,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test an argunent --dt-fmt.
+    /// Test an argument --dt-fmt.
     #[test]
     fn test_arg_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -555,7 +555,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test that an argunent --dt-fmt has a priority to an environment variable DT_FMT.
+    /// Test that an argument --dt-fmt has a priority to an environment variable DT_FMT.
     #[test]
     fn test_arg_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -611,7 +611,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test an argunent --leaps-dt-fmt.
+    /// Test an argument --leaps-dt-fmt.
     #[test]
     fn test_arg_leaps_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -718,7 +718,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test that an argunent --leaps-dt-fmt has a priority to an environment variable LEAPS_DT_FMT
+    /// Test that an argument --leaps-dt-fmt has a priority to an environment variable LEAPS_DT_FMT
     #[test]
     fn test_arg_leaps_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();

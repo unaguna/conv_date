@@ -218,7 +218,7 @@ impl Parameters<'_> {
             return PathBuf::from(path);
         }
 
-        // If it is spcified as environment variable, use it.
+        // If it is specified as environment variable, use it.
         if let Some(path) = env_vars.get_leaps_path() {
             return PathBuf::from(path);
         }
