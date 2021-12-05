@@ -1,5 +1,4 @@
 use crate::{error::Error, LeapUtc, DT_FMT};
-use anyhow::Result;
 use clap::{App, Arg, ArgMatches, Values};
 use std::collections::HashMap;
 use std::env;
@@ -32,7 +31,7 @@ pub fn exe_name() -> String {
         .to_string();
 }
 
-pub fn load_leaps(leaps_file_path: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>> {
+pub fn load_leaps(leaps_file_path: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>, Error> {
     let leaps_file = File::open(leaps_file_path)
         .map_err(|_| Error::LeapsTableIOError(leaps_file_path.clone()))?;
 

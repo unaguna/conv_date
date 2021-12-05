@@ -1,5 +1,4 @@
 use crate::error::Error;
-use anyhow::Result;
 use chrono::NaiveDateTime;
 
 #[derive(Debug, PartialEq)]
@@ -11,7 +10,7 @@ pub struct LeapUtc {
 }
 
 impl LeapUtc {
-    pub fn from_line(line: &str, sep: &str, fmt: &str) -> Result<LeapUtc> {
+    pub fn from_line(line: &str, sep: &str, fmt: &str) -> Result<LeapUtc, Error> {
         let parts: Vec<&str> = line.splitn(3, sep).collect();
         if parts.len() != 2 {
             Err(Error::LeapTableParseError(line.to_string()))?;
@@ -37,11 +36,11 @@ impl LeapUtc {
     pub fn from_lines(
         lines: impl IntoIterator<Item = impl AsRef<str>>,
         fmt: &str,
-    ) -> Result<Vec<LeapUtc>> {
+    ) -> Result<Vec<LeapUtc>, Error> {
         lines
             .into_iter()
             .map(|line| LeapUtc::from_line(line.as_ref(), " ", fmt))
-            .collect::<Result<Vec<_>>>()
+            .collect::<Result<Vec<_>, _>>()
     }
 }
 

@@ -1,5 +1,4 @@
 use crate::{error::Error, normalize_leap, LeapUtc};
-use anyhow::Result;
 use chrono::{Duration, NaiveDateTime};
 
 /// Pick the leap object to use for calc tai from the datetime.

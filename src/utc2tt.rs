@@ -1,6 +1,5 @@
 use crate::{error::Error, LeapUtc};
 use crate::{tai2tt_dt, utc2tai_dt};
-use anyhow::Result;
 use chrono::NaiveDateTime;
 
 pub fn utc2tt(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String, Error> {
