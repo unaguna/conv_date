@@ -7,6 +7,9 @@
 //! - [utc2tt](../utc2tt/index.html)
 //!
 //! This crate provide some features to above binary crates.
+//!
+//! # Caution
+//! *This library crate is being adjusted. There are plans to make disruptive changes in future updates.*
 
 pub mod error;
 #[doc(hidden)]
