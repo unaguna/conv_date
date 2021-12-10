@@ -5,6 +5,7 @@ datetimes
 deps
 milli
 rstest
+rustc
 splitn
 strftime
 tempdir
