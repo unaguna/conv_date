@@ -39,11 +39,11 @@ pub fn load_leaps(
     match leaps_file_path {
         Some(leaps_file_path) => {
             let leaps_file = File::open(leaps_file_path)
-                .map_err(|_| Error::LeapsTableIOError(leaps_file_path.clone()))?;
+                .map_err(|_| Error::TaiUtcTableIOError(leaps_file_path.clone()))?;
             let leaps_lines = BufReader::new(leaps_file)
                 .lines()
                 .collect::<Result<Vec<_>, _>>()
-                .map_err(|_| Error::LeapsTableNotTextError(leaps_file_path.clone()))?;
+                .map_err(|_| Error::TaiUtcTableNotTextError(leaps_file_path.clone()))?;
             DiffTaiUtc::from_lines(leaps_lines, datetime_fmt)
         }
         None => {

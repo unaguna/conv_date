@@ -11,7 +11,7 @@ pub enum Error {
     #[error("Cannot parse the datetime: {0}")]
     DatetimeParseError(String),
     #[error("The TAI-UTC table file isn't available: {0}")]
-    LeapsTableIOError(PathBuf),
+    TaiUtcTableIOError(PathBuf),
     #[error("Cannot read the TAI-UTC table file as text: {0}")]
-    LeapsTableNotTextError(PathBuf),
+    TaiUtcTableNotTextError(PathBuf),
 }
