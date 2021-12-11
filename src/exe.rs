@@ -84,7 +84,7 @@ impl Arguments<'_> {
         let app: App<'a, 'a> = App::new(app_name)
             .arg(
                 Arg::with_name("leaps_dt_fmt")
-                    .help("Format of datetime in leaps table file. If it is not specified, the environment variable 'LEAPS_DT_FMT' is used. If both of them are not specified, the default value \"%Y-%m-%dT%H:%M:%S%.3f\" is used.")
+                    .help("Format of datetime in TAI-UTC table file. If it is not specified, the environment variable 'LEAPS_DT_FMT' is used. If both of them are not specified, the default value \"%Y-%m-%dT%H:%M:%S%.3f\" is used.")
                     .takes_value(true)
                     .long("leaps-dt-fmt"),
             )
@@ -102,7 +102,7 @@ impl Arguments<'_> {
             )
             .arg(
                 Arg::with_name("leaps_table_file")
-                    .help("Filepath of leaps table file. If it is not specified, the environment variable 'LEAPS_TABLE' is used. If both of them are not specified, the default file ({binaries_directory}/leaps.txt) is used. If the default file also does not exist, use the built-in table in the program.")
+                    .help("Filepath of TAI-UTC table file. If it is not specified, the environment variable 'LEAPS_TABLE' is used. If both of them are not specified, the default file ({binaries_directory}/leaps.txt) is used. If the default file also does not exist, use the built-in table in the program.")
                     .takes_value(true)
                     .long("leaps-table"),
             )

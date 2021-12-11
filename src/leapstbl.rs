@@ -3,8 +3,8 @@ use chrono::NaiveDateTime;
 
 /// Difference (TAI - UTC) and the datetime at which it is applied
 ///
-/// It express a row of [the leaps table](https://web.archive.org/web/20191019051734/http://maia.usno.navy.mil/ser7/tai-utc.dat).
-/// So `Vec<DiffTaiUtc>` express the leaps table.
+/// It express a row of [the TAI-UTC table](https://web.archive.org/web/20191019051734/http://maia.usno.navy.mil/ser7/tai-utc.dat).
+/// So `Vec<DiffTaiUtc>` express the TAI-UTC table.
 #[derive(Debug, PartialEq)]
 pub struct DiffTaiUtc {
     /// (UTC) The moment when the difference (TAI - UTC) changes due to a leap second
@@ -14,12 +14,12 @@ pub struct DiffTaiUtc {
 }
 
 impl DiffTaiUtc {
-    /// Construct `DiffTaiUtc` from line of the leaps table file.
+    /// Construct `DiffTaiUtc` from line of the TAI-UTC table file.
     ///
     /// # Arguments
-    /// - `line` - a line of the leaps table file
+    /// - `line` - a line of the TAI-UTC table file
     /// - `sep` - the separator between a datetime and a difference value in `line`
-    /// - `fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in the leaps table file
+    /// - `fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in the TAI-UTC table file
     ///
     /// # Returns
     /// Returns the `DiffTaiUtc` if `line` is collect.
@@ -56,11 +56,11 @@ impl DiffTaiUtc {
         })
     }
 
-    /// Construct `Vec<DiffTaiUtc>` from lines of the leaps table file.
+    /// Construct `Vec<DiffTaiUtc>` from lines of the TAI-UTC table file.
     ///
     /// # Arguments
-    /// - `lines` - a iterable of lines of the leaps table file
-    /// - `fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in the leaps table file
+    /// - `lines` - a iterable of lines of the TAI-UTC table file
+    /// - `fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in the TAI-UTC table file
     ///
     /// # Returns
     /// Returns the `Vec<DiffTaiUtc>` if `lines` are collect.

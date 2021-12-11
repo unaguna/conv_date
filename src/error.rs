@@ -10,8 +10,8 @@ pub enum Error {
     DatetimeTooLowError(String),
     #[error("Cannot parse the datetime: {0}")]
     DatetimeParseError(String),
-    #[error("The leaps table file isn't available: {0}")]
+    #[error("The TAI-UTC table file isn't available: {0}")]
     LeapsTableIOError(PathBuf),
-    #[error("Cannot read the leaps table file as text: {0}")]
+    #[error("Cannot read the TAI-UTC table file as text: {0}")]
     LeapsTableNotTextError(PathBuf),
 }

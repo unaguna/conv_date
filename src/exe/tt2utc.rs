@@ -281,7 +281,7 @@ mod tests {
             format!(
                 "{}: {}\n",
                 exe::exe_name(),
-                "The leaps table file isn't available: /tmp/dummy/not_exists.txt"
+                "The TAI-UTC table file isn't available: /tmp/dummy/not_exists.txt"
             )
         );
     }
@@ -373,7 +373,7 @@ mod tests {
             format!(
                 "{}: {}\n",
                 exe::exe_name(),
-                "The leaps table file isn't available: /tmp/dummy/not_exists.txt"
+                "The TAI-UTC table file isn't available: /tmp/dummy/not_exists.txt"
             )
         );
     }
