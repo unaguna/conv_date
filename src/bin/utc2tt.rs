@@ -49,7 +49,7 @@
 //!     If you use it, the option `--leaps-dt-fmt` may be useful.
 //!
 //!     If both of this option and an environment variable `LEAPS_TABLE` are not specified,
-//!     it uses the default: `leaps.txt` in directory of executable file.
+//!     it uses the default: `tai-utc.txt` in directory of executable file.
 //!     If the default file also does not exist, use the built-in table in the program.
 //!
 //! - `--leaps-dt-fmt <leaps_dt_fmt>`

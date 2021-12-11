@@ -14,8 +14,8 @@ pub mod utc2tt;
 #[cfg(test)]
 mod testmod;
 
-const LEAPS_TABLE_FILENAME: &str = "leaps.txt";
-const LEAPS_TABLE: &str = include_str!("leaps.txt");
+const LEAPS_TABLE_FILENAME: &str = "tai-utc.txt";
+const LEAPS_TABLE: &str = include_str!("tai-utc.txt");
 pub const EXIT_CODE_OK: i32 = 0;
 pub const EXIT_CODE_NG: i32 = 1;
 pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
@@ -102,7 +102,7 @@ impl Arguments<'_> {
             )
             .arg(
                 Arg::with_name("leaps_table_file")
-                    .help("Filepath of TAI-UTC table file. If it is not specified, the environment variable 'LEAPS_TABLE' is used. If both of them are not specified, the default file ({binaries_directory}/leaps.txt) is used. If the default file also does not exist, use the built-in table in the program.")
+                    .help("Filepath of TAI-UTC table file. If it is not specified, the environment variable 'LEAPS_TABLE' is used. If both of them are not specified, the default file ({binaries_directory}/tai-utc.txt) is used. If the default file also does not exist, use the built-in table in the program.")
                     .takes_value(true)
                     .long("leaps-table"),
             )

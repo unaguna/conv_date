@@ -9,7 +9,7 @@ pub fn tmp_dir(prefix: Option<&str>) -> io::Result<TempDir> {
 
 pub fn tmp_leaps_table<P: AsRef<Path>>(dir: &P, lines: &[&str]) -> io::Result<PathBuf> {
     let dir_path = dir.as_ref();
-    let leaps_file_path = dir_path.join("leaps.txt");
+    let leaps_file_path = dir_path.join("tai-utc.txt");
     let mut leaps_file = File::create(&leaps_file_path)?;
 
     for line in lines {
