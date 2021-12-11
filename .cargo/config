@@ -4,6 +4,3 @@ tai2utc = "run --bin tai2utc --"
 tt2utc = "run --bin tt2utc --"
 utc2tai = "run --bin utc2tai --"
 utc2tt = "run --bin utc2tt --"
-
-[env]
-LEAPS_TABLE = { value = "resources/leaps.txt", relative = true }

@@ -16,7 +16,7 @@ pub fn main_inner(
     let params = Parameters::new(&args, &env_vars);
 
     // load leap list
-    let leaps = exe::load_leaps(&params.get_leaps_path(), params.get_leaps_dt_fmt());
+    let leaps = exe::load_leaps(params.get_leaps_path(), params.get_leaps_dt_fmt());
     let leaps = match leaps {
         Ok(leap) => leap,
         Err(e) => {
