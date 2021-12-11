@@ -647,7 +647,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test an argument --leaps-dt-fmt.
+    /// Test an argument --tai-utc-table-dt-fmt.
     #[test]
     fn test_arg_leaps_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -673,7 +673,7 @@ mod tests {
             "2017-01-01T00:00:00",
             "2017-01-01T00:00:01",
             "2017-01-01T00:00:02",
-            "--leaps-dt-fmt",
+            "--tai-utc-table-dt-fmt",
             "%Y%m%d%H%M%S%3f",
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
@@ -754,7 +754,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test that an argument --leaps-dt-fmt has a priority to an environment variable LEAPS_DT_FMT
+    /// Test that an argument --tai-utc-table-dt-fmt has a priority to an environment variable LEAPS_DT_FMT
     #[test]
     fn test_arg_leaps_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -780,7 +780,7 @@ mod tests {
             "2017-01-01T00:00:00",
             "2017-01-01T00:00:01",
             "2017-01-01T00:00:02",
-            "--leaps-dt-fmt",
+            "--tai-utc-table-dt-fmt",
             "%Y/%m/%d-%H:%M:%S",
         ];
         let env_vars = HashMap::from([

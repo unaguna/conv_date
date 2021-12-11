@@ -83,10 +83,10 @@ impl Arguments<'_> {
     ) -> Arguments<'a> {
         let app: App<'a, 'a> = App::new(app_name)
             .arg(
-                Arg::with_name("leaps_dt_fmt")
+                Arg::with_name("tai_utc_table_dt_fmt")
                     .help("Format of datetime in TAI-UTC table file. If it is not specified, the environment variable 'LEAPS_DT_FMT' is used. If both of them are not specified, the default value \"%Y-%m-%dT%H:%M:%S%.3f\" is used.")
                     .takes_value(true)
-                    .long("leaps-dt-fmt"),
+                    .long("tai-utc-table-dt-fmt"),
             )
             .arg(
                 Arg::with_name("dt_fmt")
@@ -114,7 +114,9 @@ impl Arguments<'_> {
             );
         let matches: ArgMatches<'a> = app.get_matches_from(args);
         Arguments::<'a> {
-            leaps_dt_fmt: matches.value_of("leaps_dt_fmt").map(|s| s.to_string()),
+            leaps_dt_fmt: matches
+                .value_of("tai_utc_table_dt_fmt")
+                .map(|s| s.to_string()),
             dt_fmt: matches.value_of("dt_fmt").map(|s| s.to_string()),
             io_pair_flg: matches.is_present("io_pair_flg"),
             leaps_path: matches
