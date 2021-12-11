@@ -1,14 +1,7 @@
 chrono
-Datelike
-datetime
-datetimes
 deps
 milli
 rstest
 rustc
 splitn
 strftime
-tempdir
-tempfile
-thiserror
-Timelike

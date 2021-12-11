@@ -18,5 +18,16 @@
     "cSpell.enableFiletypes": [
         "markdown",
         "rust"
-    ]
+    ],
+    "cSpell.allowCompoundWords": true,
+    "cSpell.ignorePaths": [
+        "vscode-extension",
+        ".git/objects",
+        ".vscode",
+        ".vscode-insiders",
+        "Cargo.lock"
+    ],
+    "cSpell.caseSensitive": false,
+    "cSpell.enabled": true,
+    "cSpell.useGitignore": true
 }
