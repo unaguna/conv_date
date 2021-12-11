@@ -1,7 +1,7 @@
-use crate::{error::Error, normalize_leap, LeapUtc};
+use crate::{error::Error, normalize_leap, DiffTaiUtc};
 use chrono::{Duration, NaiveDateTime, Timelike};
 
-struct LeapTai {
+struct DiffUtcTai {
     // うるう秒によってずれるタイミング (TAI)
     pub datetime: NaiveDateTime,
     // うるう秒による累積のずれ (UTC - TAI) のうち、60s=1mとして計算する部分
@@ -10,62 +10,63 @@ struct LeapTai {
     pub corr_seconds: u32,
 }
 
-/// Pick the leap object to use for calc utc from the datetime.
+/// Pick the diff object to use for calc utc from the datetime.
 ///
 /// # Arguments
 ///
 /// * `datetime` - A TAI datetime to convert to utc
-/// * `leaps` - A list of leap objects
-fn pick_dominant_leap<'a>(
+/// * `utc_tai_table` - A UTC-TAI table
+fn pick_dominant_diff<'a>(
     datetime: &NaiveDateTime,
-    leaps: &'a [LeapTai],
-) -> Result<&'a LeapTai, Error> {
+    utc_tai_table: &'a [DiffUtcTai],
+) -> Result<&'a DiffUtcTai, Error> {
     // 線形探索
-    let mut prev_leap: Option<&LeapTai> = None;
-    for leap in leaps.iter() {
-        if datetime < &leap.datetime {
+    let mut prev_diff: Option<&DiffUtcTai> = None;
+    for diff_utc_tai in utc_tai_table.iter() {
+        if datetime < &diff_utc_tai.datetime {
             break;
         }
-        prev_leap = Some(leap);
+        prev_diff = Some(diff_utc_tai);
     }
-    return match prev_leap {
-        Some(leap) => Ok(leap),
+    return match prev_diff {
+        Some(diff_utc_tai) => Ok(diff_utc_tai),
         None => Err(Error::DatetimeTooLowError(datetime.to_string()))?,
     };
 }
 
-fn utc_leaps_to_tai_leaps(leaps: &[LeapUtc]) -> Vec<LeapTai> {
-    let mut tai_leaps = Vec::new();
-    let mut prev_leap_diff = i64::MAX;
-    for leap in leaps.iter() {
-        if prev_leap_diff < leap.diff_seconds {
-            let corr_seconds = leap.diff_seconds - prev_leap_diff;
-            tai_leaps.push(LeapTai {
-                datetime: normalize_leap(&leap.datetime)
-                    + Duration::seconds(leap.diff_seconds - corr_seconds),
-                diff_seconds: -leap.diff_seconds,
+fn convert_table(tai_utc_table: &[DiffTaiUtc]) -> Vec<DiffUtcTai> {
+    let mut utc_tai_table = Vec::new();
+    let mut prev_diff = i64::MAX;
+    for diff_tai_utc in tai_utc_table.iter() {
+        if prev_diff < diff_tai_utc.diff_seconds {
+            let corr_seconds = diff_tai_utc.diff_seconds - prev_diff;
+            utc_tai_table.push(DiffUtcTai {
+                datetime: normalize_leap(&diff_tai_utc.datetime)
+                    + Duration::seconds(diff_tai_utc.diff_seconds - corr_seconds),
+                diff_seconds: -diff_tai_utc.diff_seconds,
                 corr_seconds: corr_seconds as u32,
             })
         }
-        tai_leaps.push(LeapTai {
-            datetime: normalize_leap(&leap.datetime) + Duration::seconds(leap.diff_seconds),
-            diff_seconds: -leap.diff_seconds,
+        utc_tai_table.push(DiffUtcTai {
+            datetime: normalize_leap(&diff_tai_utc.datetime)
+                + Duration::seconds(diff_tai_utc.diff_seconds),
+            diff_seconds: -diff_tai_utc.diff_seconds,
             corr_seconds: 0,
         });
-        prev_leap_diff = leap.diff_seconds;
+        prev_diff = diff_tai_utc.diff_seconds;
     }
-    return tai_leaps;
+    return utc_tai_table;
 }
 
 /// Convert datetime
 /// from [TAI](https://en.wikipedia.org/wiki/International_Atomic_Time)
 /// to [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time).
 ///
-/// This function takes leap seconds into account along the argument `leaps`.
+/// This function takes leap seconds into account along the argument `tai_utc_table`.
 ///
 /// # Arguments
 /// * `datetime` - Datetime in TAI.
-/// * `leaps` - The conversion table of TAI - UTC
+/// * `tai_utc_table` - The conversion table of TAI - UTC
 /// * `dt_fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of `datetime`
 ///
 /// # Returns
@@ -75,14 +76,14 @@ fn utc_leaps_to_tai_leaps(leaps: &[LeapUtc]) -> Vec<LeapTai> {
 ///
 /// # Examples
 /// ```
-/// use convdate::{self, LeapUtc};
+/// use convdate::{self, DiffTaiUtc};
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
-/// let leaps = LeapUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// let tai_utc_table = DiffTaiUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
 ///
 /// let tai = convdate::tai2utc(
 ///     "2017-01-01T12:00:37.000",
-///     &leaps,
+///     &tai_utc_table,
 ///     "%Y-%m-%dT%H:%M:%S%.3f");
 ///
 /// assert_eq!(tai, Ok("2017-01-01T12:00:00.000".to_string()));
@@ -91,10 +92,14 @@ fn utc_leaps_to_tai_leaps(leaps: &[LeapUtc]) -> Vec<LeapTai> {
 /// # See also
 /// * [`tai2utc_dt`] - It is same as `tai2utc`, except that the argument and the result are [`NaiveDateTime`].
 /// * [`tai2utc`](../tai2utc/index.html) (Binary crate) - The executable program which do same conversion.
-pub fn tai2utc(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String, Error> {
+pub fn tai2utc(
+    datetime: &str,
+    tai_utc_table: &[DiffTaiUtc],
+    dt_fmt: &str,
+) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
-    let utc = tai2utc_dt(&datetime, leaps)?;
+    let utc = tai2utc_dt(&datetime, tai_utc_table)?;
     Ok(utc.format(dt_fmt).to_string())
 }
 
@@ -102,11 +107,11 @@ pub fn tai2utc(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String
 /// from [TAI](https://en.wikipedia.org/wiki/International_Atomic_Time)
 /// to [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time).
 ///
-/// This function takes leap seconds into account along the argument `leaps`.
+/// This function takes leap seconds into account along the argument `tai_utc_table`.
 ///
 /// # Arguments
 /// * `datetime` - Datetime in TAI.
-/// * `leaps` - The conversion table of TAI - UTC
+/// * `tai_utc_table` - The conversion table of TAI - UTC
 ///
 /// # Returns
 /// Returns the datetime in UTC.
@@ -115,15 +120,15 @@ pub fn tai2utc(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String
 ///
 /// # Examples
 /// ```
-/// use convdate::{self, LeapUtc};
+/// use convdate::{self, DiffTaiUtc};
 /// use chrono::NaiveDate;
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
-/// let leaps = LeapUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// let tai_utc_table = DiffTaiUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
 ///
 /// let utc = convdate::tai2utc_dt(
 ///     &NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 37),
-///     &leaps);
+///     &tai_utc_table);
 ///
 /// assert_eq!(utc, Ok(NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 0)));
 /// ```
@@ -131,14 +136,17 @@ pub fn tai2utc(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String
 /// # See also
 /// * [`tai2utc`] - It is same as `tai2utc_dt`, except that the argument and the result are [`str`] and [`String`].
 /// * [`tai2utc`](../tai2utc/index.html) (Binary crate) - The executable program which do same conversion.
-pub fn tai2utc_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
-    let leaps = utc_leaps_to_tai_leaps(leaps);
-    return pick_dominant_leap(datetime, &leaps).map(|leap| {
+pub fn tai2utc_dt(
+    datetime: &NaiveDateTime,
+    tai_utc_table: &[DiffTaiUtc],
+) -> Result<NaiveDateTime, Error> {
+    let utc_tai_table = convert_table(tai_utc_table);
+    return pick_dominant_diff(datetime, &utc_tai_table).map(|diff_utc_tai| {
         let mut datetime_tmp = datetime.clone();
-        datetime_tmp += Duration::seconds(leap.diff_seconds);
+        datetime_tmp += Duration::seconds(diff_utc_tai.diff_seconds);
         NaiveDateTime::from_timestamp(
             datetime_tmp.timestamp(),
-            datetime_tmp.nanosecond() + leap.corr_seconds * 1_000_000_000,
+            datetime_tmp.nanosecond() + diff_utc_tai.corr_seconds * 1_000_000_000,
         )
     });
 }
@@ -172,29 +180,29 @@ mod tests {
     #[case("2019-12-31T23:59:57.000", "2020-01-01T00:00:35.000")]
     #[case("2020-01-01T00:00:00.000", "2020-01-01T00:00:36.000")]
     fn test_tai2utc(#[case] expected_utc: &str, #[case] tai: &str) {
-        let leaps = vec![
-            LeapUtc {
+        let tai_utc_table = vec![
+            DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
-            LeapUtc {
+            DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 37,
             },
-            LeapUtc {
+            DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2018, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
-            LeapUtc {
+            DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2019, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 38,
             },
-            LeapUtc {
+            DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2020, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
         ];
-        let utc = tai2utc(&tai, &leaps, DT_FMT);
+        let utc = tai2utc(&tai, &tai_utc_table, DT_FMT);
 
         assert_eq!(utc, Ok(expected_utc.to_string()));
     }
@@ -202,11 +210,11 @@ mod tests {
     #[test]
     fn test_error_on_illegal_format() {
         let tai = "2019-12-31 23:59:57.000";
-        let leaps = vec![LeapUtc {
+        let tai_utc_table = vec![DiffTaiUtc {
             datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
             diff_seconds: 36,
         }];
-        let error = tai2utc(&tai, &leaps, DT_FMT);
+        let error = tai2utc(&tai, &tai_utc_table, DT_FMT);
 
         assert_eq!(error, Err(Error::DatetimeParseError(tai.to_string())))
     }
@@ -214,17 +222,17 @@ mod tests {
     #[test]
     fn test_error_on_too_low_datetime() {
         let tai = "2015-07-01T00:00:35.999";
-        let leaps = vec![
-            LeapUtc {
+        let tai_utc_table = vec![
+            DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
-            LeapUtc {
+            DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 37,
             },
         ];
-        let error = tai2utc(&tai, &leaps, DT_FMT);
+        let error = tai2utc(&tai, &tai_utc_table, DT_FMT);
 
         assert_eq!(
             error,

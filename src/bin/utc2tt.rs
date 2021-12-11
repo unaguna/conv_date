@@ -43,21 +43,21 @@
 //!     2017-01-01T00:00:00 2017-01-01T00:01:09.184
 //!     ```
 //!
-//! - `--leaps-table <leaps_table_file>`
+//! - `--tai-utc-table <tai_utc_table_file>`
 //!
-//!     It specifies a file which contains definition of leaps.
-//!     If you use it, the option `--leaps-dt-fmt` may be useful.
+//!     It specifies a file which contains definition of TAI-UTC differences.
+//!     If you use it, the option `--tai-utc-table-dt-fmt` may be useful.
 //!
-//!     If both of this option and an environment variable `LEAPS_TABLE` are not specified,
-//!     it uses the default: `leaps.txt` in directory of executable file.
+//!     If both of this option and an environment variable `TAI_UTC_TABLE` are not specified,
+//!     it uses the default: `tai-utc.txt` in directory of executable file.
 //!     If the default file also does not exist, use the built-in table in the program.
 //!
-//! - `--leaps-dt-fmt <leaps_dt_fmt>`
+//! - `--tai-utc-table-dt-fmt <tai_utc_table_dt_fmt>`
 //!
-//!     [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in leaps table file.
-//!     It will be used when you use your leaps table file with the option `--leaps-table`.
+//!     [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in TAI-UTC table file.
+//!     It will be used when you use your TAI-UTC table file with the option `--tai-utc-table`.
 //!
-//!     If both of this option and an environment variable `LEAPS_DT_FMT` are not specified, it uses the default: `%Y-%m-%dT%H:%M:%S%.3f`.
+//!     If both of this option and an environment variable `TAI_UTC_TABLE_DT_FMT` are not specified, it uses the default: `%Y-%m-%dT%H:%M:%S%.3f`.
 //!
 //! - `-V`, `--version`
 //!
@@ -75,13 +75,13 @@
 //!
 //!     Look for a description for an option `--dt-fmt`.
 //!
-//! - `LEAPS_TABLE`
+//! - `TAI_UTC_TABLE`
 //!
-//!     Look for a description for an option `--leaps-table`.
+//!     Look for a description for an option `--tai-utc-table`.
 //!
-//! - `LEAPS_DT_FMT`
+//! - `TAI_UTC_TABLE_DT_FMT`
 //!
-//!     Look for a description for an option `--leaps-dt-fmt`.
+//!     Look for a description for an option `--tai-utc-table-dt-fmt`.
 //!
 
 extern crate convdate;

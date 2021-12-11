@@ -7,16 +7,16 @@ pub fn tmp_dir(prefix: Option<&str>) -> io::Result<TempDir> {
     return Builder::new().prefix(prefix.unwrap_or("")).tempdir();
 }
 
-pub fn tmp_leaps_table<P: AsRef<Path>>(dir: &P, lines: &[&str]) -> io::Result<PathBuf> {
+pub fn tmp_tai_utc_table<P: AsRef<Path>>(dir: &P, lines: &[&str]) -> io::Result<PathBuf> {
     let dir_path = dir.as_ref();
-    let leaps_file_path = dir_path.join("leaps.txt");
-    let mut leaps_file = File::create(&leaps_file_path)?;
+    let table_file_path = dir_path.join("tai-utc.txt");
+    let mut table_file = File::create(&table_file_path)?;
 
     for line in lines {
-        writeln!(leaps_file, "{}", line)?;
+        writeln!(table_file, "{}", line)?;
     }
 
-    return Ok(leaps_file_path);
+    return Ok(table_file_path);
 }
 
 pub fn tmp_text_file<P: AsRef<Path>>(dir: &P, name: &str, lines: &[&str]) -> io::Result<PathBuf> {
