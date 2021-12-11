@@ -39,7 +39,7 @@ Install and use (executable file)
 
 1. Download from https://github.com/unaguna/convdate/releases
 1. Unzip downloaded file
-1. (except for win) Use `chmod +x` for unziped files
+1. (except for win) Use `chmod +x` for unzipped files
 1. Execute; for example:
     ```bash
     ./utc2tai 2017-01-01T11:22:33 2017-01-02T11:22:33
