@@ -24,7 +24,6 @@ I show overview below.
 ├── .cspell     - configures for Code Spell Checker, extension of vscode
 ├── .vscode     - configures for Visual Studio Code
 ├── local       - each developer's working directory: written in .gitignore
-├── resources   - the resources for cargo run, not for test
 ├── src         - the source code directory
 │   ├── bin/*   - the source code of the binary crates
 │   ├── lin.rs  - the source code of the library crate
@@ -35,9 +34,6 @@ I show overview below.
 ├── Cargo.toml  - the package definition
 └── README.md   - readme file for user
 ```
-For some files, more descriptions is below.
-
-**`./resources/`** is a directory for resources of `cargo run`. It means that the resources for tests is not in this directory. Since the tests are written in such a way that they do not require resource files, resource directory for tests is not necessary.
 
 
 Crates
@@ -93,7 +89,6 @@ When releasing the software, the following steps should be taken. (*They can be 
 
 1. Make zipped file of the executable binary files by OS (Win or Linux). These will be published on GitHub later. In other words, they are not contained in the git repository.
     - Each zip file should contains executable binary files
-    - Each zip file should contains files in `./resources/`
     - Each zip file should contains no other files
 
 1. Run `cargo d` to build the document. (the document will be created in `./target/doc`)

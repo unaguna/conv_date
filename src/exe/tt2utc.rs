@@ -16,7 +16,7 @@ pub fn main_inner(
     let params = Parameters::new(&args, &env_vars);
 
     // load leap list
-    let leaps = exe::load_leaps(&params.get_leaps_path(), params.get_leaps_dt_fmt());
+    let leaps = exe::load_leaps(params.get_leaps_path(), params.get_leaps_dt_fmt());
     let leaps = match leaps {
         Ok(leap) => leap,
         Err(e) => {
@@ -59,37 +59,22 @@ mod tests {
     const EXE_NAME: &str = "utc2tt";
 
     /// Test regular case.
-    ///
-    /// It runs with no arguments and just one environment value "LEAPS_TABLE" for reproducibility
-    /// but originally the minimum execution is with no environment values.
-    /// If "LEAPS_TABLE" is not specified, the program uses file in the directory of the executable file.
     #[test]
     fn test_simply() {
-        let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
-            &test_dir,
-            &vec![
-                "2012-07-01T00:00:00 5",
-                "2015-07-01T00:00:00 6",
-                "2017-01-01T00:00:00 7",
-            ],
-        )
-        .unwrap();
-
         let args = vec![
             EXE_NAME,
-            "2015-07-01T00:00:36.184",
-            "2015-07-01T00:00:37.185",
-            "2015-07-01T00:00:38.186",
-            "2015-07-01T00:00:39.187",
-            "2015-07-01T00:00:40.188",
-            "2017-01-01T00:00:37.184",
-            "2017-01-01T00:00:38.184",
-            "2017-01-01T00:00:39.184",
-            "2017-01-01T00:00:40.184",
-            "2017-01-01T00:00:41.184",
+            "2015-07-01T00:01:06.184",
+            "2015-07-01T00:01:07.185",
+            "2015-07-01T00:01:08.186",
+            "2015-07-01T00:01:09.187",
+            "2015-07-01T00:01:10.188",
+            "2017-01-01T00:01:07.184",
+            "2017-01-01T00:01:08.184",
+            "2017-01-01T00:01:09.184",
+            "2017-01-01T00:01:10.184",
+            "2017-01-01T00:01:11.184",
         ];
-        let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
+        let env_vars = HashMap::<String, String>::from([]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
@@ -391,6 +376,57 @@ mod tests {
                 "The leaps table file isn't available: /tmp/dummy/not_exists.txt"
             )
         );
+    }
+
+    /// Test an environment variable LEAPS_TABLE.
+    #[test]
+    fn test_env_leaps_table() {
+        let test_dir = testmod::tmp_dir(Some("")).unwrap();
+        let leaps_table_path = testmod::tmp_leaps_table(
+            &test_dir,
+            &vec![
+                "2012-07-01T00:00:00 5",
+                "2015-07-01T00:00:00 6",
+                "2017-01-01T00:00:00 7",
+            ],
+        )
+        .unwrap();
+
+        let args = vec![
+            EXE_NAME,
+            "2015-07-01T00:00:36.184",
+            "2015-07-01T00:00:37.185",
+            "2015-07-01T00:00:38.186",
+            "2015-07-01T00:00:39.187",
+            "2015-07-01T00:00:40.188",
+            "2017-01-01T00:00:37.184",
+            "2017-01-01T00:00:38.184",
+            "2017-01-01T00:00:39.184",
+            "2017-01-01T00:00:40.184",
+            "2017-01-01T00:00:41.184",
+        ];
+        let env_vars = HashMap::from([("LEAPS_TABLE", leaps_table_path.to_str().unwrap())]);
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+
+        assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-06-30T23:59:59.000\n\
+            2015-06-30T23:59:60.001\n\
+            2015-07-01T00:00:00.002\n\
+            2015-07-01T00:00:01.003\n\
+            2015-07-01T00:00:02.004\n\
+            2016-12-31T23:59:59.000\n\
+            2016-12-31T23:59:60.000\n\
+            2017-01-01T00:00:00.000\n\
+            2017-01-01T00:00:01.000\n\
+            2017-01-01T00:00:02.000\n"
+        );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
     /// Test that an argument --leaps-table has a priority to an environment variable LEAPS_TABLE.

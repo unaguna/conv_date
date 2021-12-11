@@ -15,6 +15,7 @@ pub mod utc2tt;
 mod testmod;
 
 const LEAPS_TABLE_FILENAME: &str = "leaps.txt";
+const LEAPS_TABLE: &str = include_str!("leaps.txt");
 pub const EXIT_CODE_OK: i32 = 0;
 pub const EXIT_CODE_NG: i32 = 1;
 pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
@@ -31,16 +32,25 @@ pub fn exe_name() -> String {
         .to_string();
 }
 
-pub fn load_leaps(leaps_file_path: &PathBuf, datetime_fmt: &str) -> Result<Vec<LeapUtc>, Error> {
-    let leaps_file = File::open(leaps_file_path)
-        .map_err(|_| Error::LeapsTableIOError(leaps_file_path.clone()))?;
-
-    let leaps_lines = BufReader::new(leaps_file)
-        .lines()
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|_| Error::LeapsTableNotTextError(leaps_file_path.clone()))?;
-
-    LeapUtc::from_lines(leaps_lines, datetime_fmt)
+pub fn load_leaps(
+    leaps_file_path: Option<&PathBuf>,
+    datetime_fmt: &str,
+) -> Result<Vec<LeapUtc>, Error> {
+    match leaps_file_path {
+        Some(leaps_file_path) => {
+            let leaps_file = File::open(leaps_file_path)
+                .map_err(|_| Error::LeapsTableIOError(leaps_file_path.clone()))?;
+            let leaps_lines = BufReader::new(leaps_file)
+                .lines()
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|_| Error::LeapsTableNotTextError(leaps_file_path.clone()))?;
+            LeapUtc::from_lines(leaps_lines, datetime_fmt)
+        }
+        None => {
+            let leaps_lines: Vec<_> = LEAPS_TABLE.split("\n").collect();
+            LeapUtc::from_lines(leaps_lines, datetime_fmt)
+        }
+    }
 }
 
 /// Serve a method for output to stdout
@@ -92,7 +102,7 @@ impl Arguments<'_> {
             )
             .arg(
                 Arg::with_name("leaps_table_file")
-                    .help("Filepath of leaps table file. If it is not specified, the environment variable 'LEAPS_TABLE' is used. If both of them are not specified, the default file is used.")
+                    .help("Filepath of leaps table file. If it is not specified, the environment variable 'LEAPS_TABLE' is used. If both of them are not specified, the default file ({binaries_directory}/leaps.txt) is used. If the default file also does not exist, use the built-in table in the program.")
                     .takes_value(true)
                     .long("leaps-table"),
             )
@@ -170,7 +180,7 @@ impl EnvValues {
 pub struct Parameters<'a> {
     dt_fmt: &'a str,
     leaps_dt_fmt: &'a str,
-    leaps_path: PathBuf,
+    leaps_path: Option<PathBuf>,
     io_pair_flg: bool,
 }
 
@@ -208,25 +218,30 @@ impl Parameters<'_> {
         return self.io_pair_flg;
     }
 
-    pub fn get_leaps_path(&self) -> &PathBuf {
-        return &self.leaps_path;
+    pub fn get_leaps_path(&self) -> Option<&PathBuf> {
+        return self.leaps_path.as_ref();
     }
 
-    fn decide_leaps_path(args: &Arguments, env_vars: &EnvValues) -> PathBuf {
+    fn decide_leaps_path(args: &Arguments, env_vars: &EnvValues) -> Option<PathBuf> {
         // If it is specified as command args, use it.
         if let Some(path) = args.get_leaps_path() {
-            return PathBuf::from(path);
+            return Some(PathBuf::from(path));
         }
 
         // If it is specified as environment variable, use it.
         if let Some(path) = env_vars.get_leaps_path() {
-            return PathBuf::from(path);
+            return Some(PathBuf::from(path));
         }
 
-        // use default file
+        // If default file exists, use it.
         let mut exe_path = env::current_exe().unwrap();
         exe_path.pop();
         exe_path.push(LEAPS_TABLE_FILENAME);
-        return exe_path;
+        if exe_path.exists() {
+            return Some(exe_path);
+        }
+
+        // use builtin default
+        return None;
     }
 }
