@@ -6,21 +6,21 @@ use chrono::{Duration, NaiveDateTime};
 /// # Arguments
 ///
 /// * `datetime` - A datetime to convert to tai
-/// * `leaps` - A list of leap objects
-fn pick_dominant_leap<'a>(
+/// * `tai_utc_table` - A TAI-UTC table
+fn pick_dominant_diff<'a>(
     datetime: &NaiveDateTime,
-    leaps: &'a [DiffTaiUtc],
+    tai_utc_table: &'a [DiffTaiUtc],
 ) -> Result<&'a DiffTaiUtc, Error> {
     // 線形探索
-    let mut prev_leap: Option<&DiffTaiUtc> = None;
-    for leap in leaps.iter() {
-        if datetime < &leap.datetime {
+    let mut prev_diff: Option<&DiffTaiUtc> = None;
+    for diff_utc_tai in tai_utc_table.iter() {
+        if datetime < &diff_utc_tai.datetime {
             break;
         }
-        prev_leap = Some(leap);
+        prev_diff = Some(diff_utc_tai);
     }
-    return match prev_leap {
-        Some(leap) => Ok(leap),
+    return match prev_diff {
+        Some(diff_utc_tai) => Ok(diff_utc_tai),
         None => Err(Error::DatetimeTooLowError(datetime.to_string()))?,
     };
 }
@@ -109,7 +109,7 @@ pub fn utc2tai_dt(
 ) -> Result<NaiveDateTime, Error> {
     let datetime_nm = normalize_leap(datetime);
 
-    return pick_dominant_leap(datetime, tai_utc_table)
+    return pick_dominant_diff(datetime, tai_utc_table)
         .map(|diff_tai_utc| datetime_nm + Duration::seconds(diff_tai_utc.diff_seconds));
 }
 

@@ -10,51 +10,52 @@ struct LeapTai {
     pub corr_seconds: u32,
 }
 
-/// Pick the leap object to use for calc utc from the datetime.
+/// Pick the diff object to use for calc utc from the datetime.
 ///
 /// # Arguments
 ///
 /// * `datetime` - A TAI datetime to convert to utc
-/// * `leaps` - A list of leap objects
-fn pick_dominant_leap<'a>(
+/// * `utc_tai_table` - A UTC-TAI table
+fn pick_dominant_diff<'a>(
     datetime: &NaiveDateTime,
-    leaps: &'a [LeapTai],
+    utc_tai_table: &'a [LeapTai],
 ) -> Result<&'a LeapTai, Error> {
     // 線形探索
-    let mut prev_leap: Option<&LeapTai> = None;
-    for leap in leaps.iter() {
-        if datetime < &leap.datetime {
+    let mut prev_diff: Option<&LeapTai> = None;
+    for diff_utc_tai in utc_tai_table.iter() {
+        if datetime < &diff_utc_tai.datetime {
             break;
         }
-        prev_leap = Some(leap);
+        prev_diff = Some(diff_utc_tai);
     }
-    return match prev_leap {
-        Some(leap) => Ok(leap),
+    return match prev_diff {
+        Some(diff_utc_tai) => Ok(diff_utc_tai),
         None => Err(Error::DatetimeTooLowError(datetime.to_string()))?,
     };
 }
 
-fn utc_leaps_to_tai_leaps(leaps: &[DiffTaiUtc]) -> Vec<LeapTai> {
-    let mut tai_leaps = Vec::new();
-    let mut prev_leap_diff = i64::MAX;
-    for leap in leaps.iter() {
-        if prev_leap_diff < leap.diff_seconds {
-            let corr_seconds = leap.diff_seconds - prev_leap_diff;
-            tai_leaps.push(LeapTai {
-                datetime: normalize_leap(&leap.datetime)
-                    + Duration::seconds(leap.diff_seconds - corr_seconds),
-                diff_seconds: -leap.diff_seconds,
+fn convert_table(tai_utc_table: &[DiffTaiUtc]) -> Vec<LeapTai> {
+    let mut utc_tai_table = Vec::new();
+    let mut prev_diff = i64::MAX;
+    for diff_tai_utc in tai_utc_table.iter() {
+        if prev_diff < diff_tai_utc.diff_seconds {
+            let corr_seconds = diff_tai_utc.diff_seconds - prev_diff;
+            utc_tai_table.push(LeapTai {
+                datetime: normalize_leap(&diff_tai_utc.datetime)
+                    + Duration::seconds(diff_tai_utc.diff_seconds - corr_seconds),
+                diff_seconds: -diff_tai_utc.diff_seconds,
                 corr_seconds: corr_seconds as u32,
             })
         }
-        tai_leaps.push(LeapTai {
-            datetime: normalize_leap(&leap.datetime) + Duration::seconds(leap.diff_seconds),
-            diff_seconds: -leap.diff_seconds,
+        utc_tai_table.push(LeapTai {
+            datetime: normalize_leap(&diff_tai_utc.datetime)
+                + Duration::seconds(diff_tai_utc.diff_seconds),
+            diff_seconds: -diff_tai_utc.diff_seconds,
             corr_seconds: 0,
         });
-        prev_leap_diff = leap.diff_seconds;
+        prev_diff = diff_tai_utc.diff_seconds;
     }
-    return tai_leaps;
+    return utc_tai_table;
 }
 
 /// Convert datetime
@@ -139,8 +140,8 @@ pub fn tai2utc_dt(
     datetime: &NaiveDateTime,
     tai_utc_table: &[DiffTaiUtc],
 ) -> Result<NaiveDateTime, Error> {
-    let utc_tai_table = utc_leaps_to_tai_leaps(tai_utc_table);
-    return pick_dominant_leap(datetime, &utc_tai_table).map(|diff_utc_tai| {
+    let utc_tai_table = convert_table(tai_utc_table);
+    return pick_dominant_diff(datetime, &utc_tai_table).map(|diff_utc_tai| {
         let mut datetime_tmp = datetime.clone();
         datetime_tmp += Duration::seconds(diff_utc_tai.diff_seconds);
         NaiveDateTime::from_timestamp(
