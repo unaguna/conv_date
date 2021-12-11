@@ -74,13 +74,13 @@ impl Arguments<'_> {
         let app: App<'a, 'a> = App::new(app_name)
             .arg(
                 Arg::with_name("leaps_dt_fmt")
-                    .help("format of datetime in leaps table file")
+                    .help("Format of datetime in leaps table file. If it is not specified, the environment variable 'LEAPS_DT_FMT' is used. If both of them are not specified, the default value \"%Y-%m-%dT%H:%M:%S%.3f\" is used.")
                     .takes_value(true)
                     .long("leaps-dt-fmt"),
             )
             .arg(
                 Arg::with_name("dt_fmt")
-                    .help("format of <datetime>")
+                    .help("Format of <datetime>. If it is not specified, the environment variable 'DT_FMT' is used. If both of them are not specified, the default value \"%Y-%m-%dT%H:%M:%S%.3f\" is used.")
                     .takes_value(true)
                     .long("dt-fmt"),
             )
@@ -92,7 +92,7 @@ impl Arguments<'_> {
             )
             .arg(
                 Arg::with_name("leaps_table_file")
-                    .help("Filepath of leaps table file. If it is not specified, environment value 'LEAPS_TABLE' is used. If both of them are not specified, the default file is used.")
+                    .help("Filepath of leaps table file. If it is not specified, the environment variable 'LEAPS_TABLE' is used. If both of them are not specified, the default file is used.")
                     .takes_value(true)
                     .long("leaps-table"),
             )
@@ -218,7 +218,7 @@ impl Parameters<'_> {
             return PathBuf::from(path);
         }
 
-        // If it is spcified as environment variable, use it.
+        // If it is specified as environment variable, use it.
         if let Some(path) = env_vars.get_leaps_path() {
             return PathBuf::from(path);
         }

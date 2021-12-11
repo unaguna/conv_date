@@ -1,4 +1,33 @@
 {
     "files.eol": "\n",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "cSpell.customDictionaries": {
+        "custom-dictionary-convdate": {
+            "name": "custom-dictionary-convdate",
+            "path": "${workspaceFolder:convdate}/.cspell/custom-dictionary-convdate.txt",
+            "addWords": true,
+            "scope": "workspace"
+        },
+        "custom-dictionary-rust": {
+            "name": "custom-dictionary-rust",
+            "path": "${workspaceFolder:convdate}/.cspell/custom-dictionary-rust.txt",
+            "addWords": true,
+            "scope": "workspace"
+        }
+    },
+    "cSpell.enableFiletypes": [
+        "markdown",
+        "rust"
+    ],
+    "cSpell.allowCompoundWords": true,
+    "cSpell.ignorePaths": [
+        "vscode-extension",
+        ".git/objects",
+        ".vscode",
+        ".vscode-insiders",
+        "Cargo.lock"
+    ],
+    "cSpell.caseSensitive": false,
+    "cSpell.enabled": true,
+    "cSpell.useGitignore": true
 }

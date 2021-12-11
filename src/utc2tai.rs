@@ -25,6 +25,40 @@ fn pick_dominant_leap<'a>(
     };
 }
 
+/// Convert datetime
+/// from [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)
+/// to [TAI](https://en.wikipedia.org/wiki/International_Atomic_Time).
+///
+/// This function takes leap seconds into account along the argument `leaps`.
+///
+/// # Arguments
+/// * `datetime` - Datetime in UTC.
+/// * `leaps` - The conversion table of TAI - UTC
+/// * `dt_fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of `datetime`
+///
+/// # Returns
+/// Returns the datetime in TAI.
+///
+/// Returns [`Error`](crate::error::Error) if it fail to convert.
+///
+/// # Examples
+/// ```
+/// use convdate::{self, LeapUtc};
+///
+/// // Usually, lines read from the file are used as the argument of `from_lines`.
+/// let leaps = LeapUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+///
+/// let tai = convdate::utc2tai(
+///     "2017-01-01T12:00:00.000",
+///     &leaps,
+///     "%Y-%m-%dT%H:%M:%S%.3f");
+///
+/// assert_eq!(tai, Ok("2017-01-01T12:00:37.000".to_string()));
+/// ```
+///
+/// # See also
+/// * [`utc2tai_dt`] - It is same as `utc2tai`, except that the argument and the result are [`NaiveDateTime`].
+/// * [`utc2tai`](../utc2tai/index.html) (Binary crate) - The executable program which do same conversion.
 pub fn utc2tai(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
@@ -32,6 +66,39 @@ pub fn utc2tai(datetime: &str, leaps: &[LeapUtc], dt_fmt: &str) -> Result<String
     Ok(tai.format(dt_fmt).to_string())
 }
 
+/// Convert datetime
+/// from [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)
+/// to [TAI](https://en.wikipedia.org/wiki/International_Atomic_Time).
+///
+/// This function takes leap seconds into account along the argument `leaps`.
+///
+/// # Arguments
+/// * `datetime` - Datetime in UTC.
+/// * `leaps` - The conversion table of TAI - UTC
+///
+/// # Returns
+/// Returns the datetime in TAI.
+///
+/// Returns [`Error`](crate::error::Error) if it fail to convert.
+///
+/// # Examples
+/// ```
+/// use convdate::{self, LeapUtc};
+/// use chrono::NaiveDate;
+///
+/// // Usually, lines read from the file are used as the argument of `from_lines`.
+/// let leaps = LeapUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+///
+/// let tai = convdate::utc2tai_dt(
+///     &NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 0),
+///     &leaps);
+///
+/// assert_eq!(tai, Ok(NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 37)));
+/// ```
+///
+/// # See also
+/// * [`utc2tai`] - It is same as `utc2tai_dt`, except that the argument and the result are [`str`] and [`String`].
+/// * [`utc2tai`](../utc2tai/index.html) (Binary crate) - The executable program which do same conversion.
 pub fn utc2tai_dt(datetime: &NaiveDateTime, leaps: &[LeapUtc]) -> Result<NaiveDateTime, Error> {
     let datetime_nm = normalize_leap(datetime);
 

@@ -1,15 +1,42 @@
 use crate::error::Error;
 use chrono::NaiveDateTime;
 
+/// Difference (TAI - UTC) and the datetime at which it is applied
+///
+/// It express a row of [the leaps table](https://web.archive.org/web/20191019051734/http://maia.usno.navy.mil/ser7/tai-utc.dat).
+/// So `Vec<LeapUtc>` express the leaps table.
 #[derive(Debug, PartialEq)]
 pub struct LeapUtc {
-    // うるう秒によってずれるタイミング (UTC)
+    /// (UTC) The moment when the difference (TAI - UTC) changes due to a leap second
     pub datetime: NaiveDateTime,
-    // うるう秒による累積のずれ (TAI - UTC)
+    /// The difference (TAI - UTC)
     pub diff_seconds: i64,
 }
 
 impl LeapUtc {
+    /// Construct `LeapUtc` from line of the leaps table file.
+    ///
+    /// # Arguments
+    /// - `line` - a line of the leaps table file
+    /// - `sep` - the separator between a datetime and a difference value in `line`
+    /// - `fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in the leaps table file
+    ///
+    /// # Returns
+    /// Returns the `LeapUtc` if `line` is collect.
+    ///
+    /// Returns [`Error`](crate::error::Error) if `line` is illegal.
+    ///
+    /// # Examples
+    /// ```
+    /// use convdate::LeapUtc;
+    /// use chrono::NaiveDate;
+    ///
+    /// let leap_line = LeapUtc::from_line("2017-01-01T00:00:00 37", " ", "%Y-%m-%dT%H:%M:%S");
+    /// assert_eq!(leap_line, Ok(LeapUtc {
+    ///     datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
+    ///     diff_seconds: 37,
+    /// }));
+    /// ```
     pub fn from_line(line: &str, sep: &str, fmt: &str) -> Result<LeapUtc, Error> {
         let parts: Vec<&str> = line.splitn(3, sep).collect();
         if parts.len() != 2 {
@@ -29,6 +56,17 @@ impl LeapUtc {
         })
     }
 
+    /// Construct `Vec<LeapUtc>` from lines of the leaps table file.
+    ///
+    /// # Arguments
+    /// - `lines` - a iterable of lines of the leaps table file
+    /// - `fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in the leaps table file
+    ///
+    /// # Returns
+    /// Returns the `Vec<LeapUtc>` if `lines` are collect.
+    ///
+    /// Returns [`Error`](crate::error::Error) if some of `lines` are illegal.
+    // TODO: Add sep to arguments
     pub fn from_lines(
         lines: impl IntoIterator<Item = impl AsRef<str>>,
         fmt: &str,
