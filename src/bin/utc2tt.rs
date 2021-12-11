@@ -43,9 +43,9 @@
 //!     2017-01-01T00:00:00 2017-01-01T00:01:09.184
 //!     ```
 //!
-//! - `--tai-utc-table <leaps_table_file>`
+//! - `--tai-utc-table <tai_utc_table_file>`
 //!
-//!     It specifies a file which contains definition of leaps.
+//!     It specifies a file which contains definition of TAI-UTC differences.
 //!     If you use it, the option `--tai-utc-table-dt-fmt` may be useful.
 //!
 //!     If both of this option and an environment variable `TAI_UTC_TABLE` are not specified,
