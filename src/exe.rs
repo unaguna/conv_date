@@ -101,10 +101,10 @@ impl Arguments<'_> {
                     .long("io-pair"),
             )
             .arg(
-                Arg::with_name("leaps_table_file")
+                Arg::with_name("tai_utc_table_file")
                     .help("Filepath of TAI-UTC table file. If it is not specified, the environment variable 'LEAPS_TABLE' is used. If both of them are not specified, the default file ({binaries_directory}/tai-utc.txt) is used. If the default file also does not exist, use the built-in table in the program.")
                     .takes_value(true)
-                    .long("leaps-table"),
+                    .long("tai-utc-table"),
             )
             .arg(
                 Arg::with_name("datetime")
@@ -117,7 +117,9 @@ impl Arguments<'_> {
             leaps_dt_fmt: matches.value_of("leaps_dt_fmt").map(|s| s.to_string()),
             dt_fmt: matches.value_of("dt_fmt").map(|s| s.to_string()),
             io_pair_flg: matches.is_present("io_pair_flg"),
-            leaps_path: matches.value_of("leaps_table_file").map(|s| s.to_string()),
+            leaps_path: matches
+                .value_of("tai_utc_table_file")
+                .map(|s| s.to_string()),
             matches: matches,
         }
     }

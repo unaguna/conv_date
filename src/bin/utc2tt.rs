@@ -43,7 +43,7 @@
 //!     2017-01-01T00:00:00 2017-01-01T00:01:09.184
 //!     ```
 //!
-//! - `--leaps-table <leaps_table_file>`
+//! - `--tai-utc-table <leaps_table_file>`
 //!
 //!     It specifies a file which contains definition of leaps.
 //!     If you use it, the option `--leaps-dt-fmt` may be useful.
@@ -55,7 +55,7 @@
 //! - `--leaps-dt-fmt <leaps_dt_fmt>`
 //!
 //!     [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in TAI-UTC table file.
-//!     It will be used when you use your TAI-UTC table file with the option `--leaps-table`.
+//!     It will be used when you use your TAI-UTC table file with the option `--tai-utc-table`.
 //!
 //!     If both of this option and an environment variable `LEAPS_DT_FMT` are not specified, it uses the default: `%Y-%m-%dT%H:%M:%S%.3f`.
 //!
@@ -77,7 +77,7 @@
 //!
 //! - `LEAPS_TABLE`
 //!
-//!     Look for a description for an option `--leaps-table`.
+//!     Look for a description for an option `--tai-utc-table`.
 //!
 //! - `LEAPS_DT_FMT`
 //!

@@ -286,7 +286,7 @@ mod tests {
         );
     }
 
-    /// Test an argument --leaps-table.
+    /// Test an argument --tai-utc-table.
     #[test]
     fn test_arg_leaps_table() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -312,7 +312,7 @@ mod tests {
             "2017-01-01T00:00:07",
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
-            "--leaps-table",
+            "--tai-utc-table",
             leaps_table_path.to_str().unwrap(),
         ];
         let env_vars: HashMap<&str, &str> = HashMap::from([]);
@@ -339,7 +339,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test error when an argument --leaps-table is a path which is not exists
+    /// Test error when an argument --tai-utc-table is a path which is not exists
     #[test]
     fn test_arg_leaps_table_not_exist() {
         let leaps_table_path = "/tmp/dummy/not_exists.txt";
@@ -356,7 +356,7 @@ mod tests {
             "2017-01-01T00:00:07",
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
-            "--leaps-table",
+            "--tai-utc-table",
             leaps_table_path,
         ];
         let env_vars: HashMap<&str, &str> = HashMap::from([]);
@@ -429,7 +429,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test that an argument --leaps-table has a priority to an environment variable LEAPS_TABLE.
+    /// Test that an argument --tai-utc-table has a priority to an environment variable LEAPS_TABLE.
     #[test]
     fn test_arg_leaps_table_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -457,7 +457,7 @@ mod tests {
             "2017-01-01T00:00:07",
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
-            "--leaps-table",
+            "--tai-utc-table",
             leaps_table_path.to_str().unwrap(),
         ];
         let env_vars = HashMap::from([("LEAPS_TABLE", dummy_leaps_table_path.to_str().unwrap())]);
