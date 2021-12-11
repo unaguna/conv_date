@@ -1,4 +1,4 @@
-use crate::{error::Error, LeapUtc, DT_FMT};
+use crate::{error::Error, DiffTaiUtc, DT_FMT};
 use clap::{App, Arg, ArgMatches, Values};
 use std::collections::HashMap;
 use std::env;
@@ -35,7 +35,7 @@ pub fn exe_name() -> String {
 pub fn load_leaps(
     leaps_file_path: Option<&PathBuf>,
     datetime_fmt: &str,
-) -> Result<Vec<LeapUtc>, Error> {
+) -> Result<Vec<DiffTaiUtc>, Error> {
     match leaps_file_path {
         Some(leaps_file_path) => {
             let leaps_file = File::open(leaps_file_path)
@@ -44,11 +44,11 @@ pub fn load_leaps(
                 .lines()
                 .collect::<Result<Vec<_>, _>>()
                 .map_err(|_| Error::LeapsTableNotTextError(leaps_file_path.clone()))?;
-            LeapUtc::from_lines(leaps_lines, datetime_fmt)
+            DiffTaiUtc::from_lines(leaps_lines, datetime_fmt)
         }
         None => {
             let leaps_lines: Vec<_> = LEAPS_TABLE.split("\n").collect();
-            LeapUtc::from_lines(leaps_lines, datetime_fmt)
+            DiffTaiUtc::from_lines(leaps_lines, datetime_fmt)
         }
     }
 }
