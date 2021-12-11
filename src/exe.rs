@@ -73,7 +73,7 @@ pub struct Arguments<'a> {
     tai_utc_table_dt_fmt: Option<String>,
     dt_fmt: Option<String>,
     io_pair_flg: bool,
-    leaps_path: Option<String>,
+    tai_utc_table_path: Option<String>,
 }
 
 impl Arguments<'_> {
@@ -119,7 +119,7 @@ impl Arguments<'_> {
                 .map(|s| s.to_string()),
             dt_fmt: matches.value_of("dt_fmt").map(|s| s.to_string()),
             io_pair_flg: matches.is_present("io_pair_flg"),
-            leaps_path: matches
+            tai_utc_table_path: matches
                 .value_of("tai_utc_table_file")
                 .map(|s| s.to_string()),
             matches: matches,
@@ -134,8 +134,8 @@ impl Arguments<'_> {
         self.tai_utc_table_dt_fmt.as_ref().map(|s| s.as_str())
     }
 
-    pub fn get_leaps_path(&self) -> Option<&str> {
-        self.leaps_path.as_ref().map(|s| s.as_str())
+    pub fn get_tai_utc_table_path(&self) -> Option<&str> {
+        self.tai_utc_table_path.as_ref().map(|s| s.as_str())
     }
 
     pub fn get_io_pair_flg(&self) -> bool {
@@ -152,7 +152,7 @@ impl Arguments<'_> {
 pub struct EnvValues {
     dt_fmt: Option<String>,
     tai_utc_table_dt_fmt: Option<String>,
-    leaps_path: Option<String>,
+    tai_utc_table_path: Option<String>,
 }
 
 impl EnvValues {
@@ -164,7 +164,7 @@ impl EnvValues {
         EnvValues {
             dt_fmt: map.get("DT_FMT").map(|s| s.to_string()),
             tai_utc_table_dt_fmt: map.get("LEAPS_DT_FMT").map(|s| s.to_string()),
-            leaps_path: map.get("LEAPS_TABLE").map(|s| s.to_string()),
+            tai_utc_table_path: map.get("LEAPS_TABLE").map(|s| s.to_string()),
         }
     }
 
@@ -176,15 +176,15 @@ impl EnvValues {
         self.tai_utc_table_dt_fmt.as_ref().map(|s| s.as_str())
     }
 
-    pub fn get_leaps_path(&self) -> Option<&str> {
-        self.leaps_path.as_ref().map(|s| s.as_str())
+    pub fn get_tai_utc_table_path(&self) -> Option<&str> {
+        self.tai_utc_table_path.as_ref().map(|s| s.as_str())
     }
 }
 
 pub struct Parameters<'a> {
     dt_fmt: &'a str,
     tai_utc_table_dt_fmt: &'a str,
-    leaps_path: Option<PathBuf>,
+    tai_utc_table_path: Option<PathBuf>,
     io_pair_flg: bool,
 }
 
@@ -193,7 +193,7 @@ impl Parameters<'_> {
         return Parameters {
             dt_fmt: Parameters::decide_dt_fmt(args, env_vars),
             tai_utc_table_dt_fmt: Parameters::decide_tai_utc_table_dt_fmt(args, env_vars),
-            leaps_path: Parameters::decide_leaps_path(args, env_vars),
+            tai_utc_table_path: Parameters::decide_tai_utc_table_path(args, env_vars),
             io_pair_flg: args.io_pair_flg,
         };
     }
@@ -222,18 +222,18 @@ impl Parameters<'_> {
         return self.io_pair_flg;
     }
 
-    pub fn get_leaps_path(&self) -> Option<&PathBuf> {
-        return self.leaps_path.as_ref();
+    pub fn get_tai_utc_table_path(&self) -> Option<&PathBuf> {
+        return self.tai_utc_table_path.as_ref();
     }
 
-    fn decide_leaps_path(args: &Arguments, env_vars: &EnvValues) -> Option<PathBuf> {
+    fn decide_tai_utc_table_path(args: &Arguments, env_vars: &EnvValues) -> Option<PathBuf> {
         // If it is specified as command args, use it.
-        if let Some(path) = args.get_leaps_path() {
+        if let Some(path) = args.get_tai_utc_table_path() {
             return Some(PathBuf::from(path));
         }
 
         // If it is specified as environment variable, use it.
-        if let Some(path) = env_vars.get_leaps_path() {
+        if let Some(path) = env_vars.get_tai_utc_table_path() {
             return Some(PathBuf::from(path));
         }
 

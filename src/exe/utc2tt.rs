@@ -16,7 +16,10 @@ pub fn main_inner(
     let params = Parameters::new(&args, &env_vars);
 
     // load leap list
-    let leaps = exe::load_tai_utc_table(params.get_leaps_path(), params.get_tai_utc_table_dt_fmt());
+    let leaps = exe::load_tai_utc_table(
+        params.get_tai_utc_table_path(),
+        params.get_tai_utc_table_dt_fmt(),
+    );
     let leaps = match leaps {
         Ok(leap) => leap,
         Err(e) => {
