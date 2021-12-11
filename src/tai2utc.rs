@@ -1,7 +1,7 @@
 use crate::{error::Error, normalize_leap, DiffTaiUtc};
 use chrono::{Duration, NaiveDateTime, Timelike};
 
-struct LeapTai {
+struct DiffUtcTai {
     // うるう秒によってずれるタイミング (TAI)
     pub datetime: NaiveDateTime,
     // うるう秒による累積のずれ (UTC - TAI) のうち、60s=1mとして計算する部分
@@ -18,10 +18,10 @@ struct LeapTai {
 /// * `utc_tai_table` - A UTC-TAI table
 fn pick_dominant_diff<'a>(
     datetime: &NaiveDateTime,
-    utc_tai_table: &'a [LeapTai],
-) -> Result<&'a LeapTai, Error> {
+    utc_tai_table: &'a [DiffUtcTai],
+) -> Result<&'a DiffUtcTai, Error> {
     // 線形探索
-    let mut prev_diff: Option<&LeapTai> = None;
+    let mut prev_diff: Option<&DiffUtcTai> = None;
     for diff_utc_tai in utc_tai_table.iter() {
         if datetime < &diff_utc_tai.datetime {
             break;
@@ -34,20 +34,20 @@ fn pick_dominant_diff<'a>(
     };
 }
 
-fn convert_table(tai_utc_table: &[DiffTaiUtc]) -> Vec<LeapTai> {
+fn convert_table(tai_utc_table: &[DiffTaiUtc]) -> Vec<DiffUtcTai> {
     let mut utc_tai_table = Vec::new();
     let mut prev_diff = i64::MAX;
     for diff_tai_utc in tai_utc_table.iter() {
         if prev_diff < diff_tai_utc.diff_seconds {
             let corr_seconds = diff_tai_utc.diff_seconds - prev_diff;
-            utc_tai_table.push(LeapTai {
+            utc_tai_table.push(DiffUtcTai {
                 datetime: normalize_leap(&diff_tai_utc.datetime)
                     + Duration::seconds(diff_tai_utc.diff_seconds - corr_seconds),
                 diff_seconds: -diff_tai_utc.diff_seconds,
                 corr_seconds: corr_seconds as u32,
             })
         }
-        utc_tai_table.push(LeapTai {
+        utc_tai_table.push(DiffUtcTai {
             datetime: normalize_leap(&diff_tai_utc.datetime)
                 + Duration::seconds(diff_tai_utc.diff_seconds),
             diff_seconds: -diff_tai_utc.diff_seconds,
