@@ -16,9 +16,12 @@ pub fn main_inner(
     let params = Parameters::new(&args, &env_vars);
 
     // load leap list
-    let leaps = exe::load_tai_utc_table(params.get_tai_utc_table_path(), params.get_tai_utc_table_dt_fmt());
-    let leaps = match leaps {
-        Ok(leap) => leap,
+    let tai_utc_table = exe::load_tai_utc_table(
+        params.get_tai_utc_table_path(),
+        params.get_tai_utc_table_dt_fmt(),
+    );
+    let tai_utc_table = match tai_utc_table {
+        Ok(tai_utc_table) => tai_utc_table,
         Err(e) => {
             exe::print_err(stderr, &e);
             return exe::EXIT_CODE_NG;
@@ -31,7 +34,7 @@ pub fn main_inner(
     // calc TAI
     let mut someone_is_err = false;
     for in_utc in args.get_datetimes() {
-        let tai = utc2tai(in_utc, &leaps, params.get_dt_fmt());
+        let tai = utc2tai(in_utc, &tai_utc_table, params.get_dt_fmt());
 
         match tai {
             Err(e) => {
