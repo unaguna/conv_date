@@ -84,7 +84,7 @@ impl Arguments<'_> {
         let app: App<'a, 'a> = App::new(app_name)
             .arg(
                 Arg::with_name("tai_utc_table_dt_fmt")
-                    .help("Format of datetime in TAI-UTC table file. If it is not specified, the environment variable 'LEAPS_DT_FMT' is used. If both of them are not specified, the default value \"%Y-%m-%dT%H:%M:%S%.3f\" is used.")
+                    .help("Format of datetime in TAI-UTC table file. If it is not specified, the environment variable 'TAI_UTC_TABLE_DT_FMT' is used. If both of them are not specified, the default value \"%Y-%m-%dT%H:%M:%S%.3f\" is used.")
                     .takes_value(true)
                     .long("tai-utc-table-dt-fmt"),
             )
@@ -163,7 +163,7 @@ impl EnvValues {
             .collect::<HashMap<_, _>>();
         EnvValues {
             dt_fmt: map.get("DT_FMT").map(|s| s.to_string()),
-            tai_utc_table_dt_fmt: map.get("LEAPS_DT_FMT").map(|s| s.to_string()),
+            tai_utc_table_dt_fmt: map.get("TAI_UTC_TABLE_DT_FMT").map(|s| s.to_string()),
             tai_utc_table_path: map.get("TAI_UTC_TABLE").map(|s| s.to_string()),
         }
     }

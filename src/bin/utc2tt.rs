@@ -57,7 +57,7 @@
 //!     [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in TAI-UTC table file.
 //!     It will be used when you use your TAI-UTC table file with the option `--tai-utc-table`.
 //!
-//!     If both of this option and an environment variable `LEAPS_DT_FMT` are not specified, it uses the default: `%Y-%m-%dT%H:%M:%S%.3f`.
+//!     If both of this option and an environment variable `TAI_UTC_TABLE_DT_FMT` are not specified, it uses the default: `%Y-%m-%dT%H:%M:%S%.3f`.
 //!
 //! - `-V`, `--version`
 //!
@@ -79,7 +79,7 @@
 //!
 //!     Look for a description for an option `--tai-utc-table`.
 //!
-//! - `LEAPS_DT_FMT`
+//! - `TAI_UTC_TABLE_DT_FMT`
 //!
 //!     Look for a description for an option `--tai-utc-table-dt-fmt`.
 //!

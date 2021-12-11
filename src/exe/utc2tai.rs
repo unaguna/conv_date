@@ -703,7 +703,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test an environment variable LEAPS_DT_FMT.
+    /// Test an environment variable TAI_UTC_TABLE_DT_FMT.
     #[test]
     fn test_env_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -732,7 +732,7 @@ mod tests {
         ];
         let env_vars = HashMap::from([
             ("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap()),
-            ("LEAPS_DT_FMT", "%Y%m%d%H%M%S%3f"),
+            ("TAI_UTC_TABLE_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
@@ -757,7 +757,7 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
 
-    /// Test that an argument --tai-utc-table-dt-fmt has a priority to an environment variable LEAPS_DT_FMT
+    /// Test that an argument --tai-utc-table-dt-fmt has a priority to an environment variable TAI_UTC_TABLE_DT_FMT
     #[test]
     fn test_arg_tai_utc_table_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
@@ -788,7 +788,7 @@ mod tests {
         ];
         let env_vars = HashMap::from([
             ("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap()),
-            ("LEAPS_DT_FMT", "%Y%m%d%H%M%S%3f"),
+            ("TAI_UTC_TABLE_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
