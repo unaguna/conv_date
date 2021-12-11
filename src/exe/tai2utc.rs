@@ -15,7 +15,7 @@ pub fn main_inner(
     // Analyze the arguments and the environment variables.
     let params = Parameters::new(&args, &env_vars);
 
-    // load leap list
+    // load TAI-UTC table
     let tai_utc_table = exe::load_tai_utc_table(
         params.get_tai_utc_table_path(),
         params.get_tai_utc_table_dt_fmt(),
