@@ -16,7 +16,7 @@ pub fn main_inner(
     let params = Parameters::new(&args, &env_vars);
 
     // load leap list
-    let leaps = exe::load_tai_utc_table(params.get_leaps_path(), params.get_leaps_dt_fmt());
+    let leaps = exe::load_tai_utc_table(params.get_leaps_path(), params.get_tai_utc_table_dt_fmt());
     let leaps = match leaps {
         Ok(leap) => leap,
         Err(e) => {
@@ -205,7 +205,7 @@ mod tests {
 
     /// Test error when leaps datetimes are illegal.
     #[test]
-    fn test_leaps_dt_illegal_against_default_leaps_dt_fmt() {
+    fn test_leaps_dt_illegal_against_default_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
         let leaps_table_path = testmod::tmp_leaps_table(
             &test_dir,
@@ -649,7 +649,7 @@ mod tests {
 
     /// Test an argument --tai-utc-table-dt-fmt.
     #[test]
-    fn test_arg_leaps_dt_fmt() {
+    fn test_arg_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
         let leaps_table_path = testmod::tmp_leaps_table(
             &test_dir,
@@ -702,7 +702,7 @@ mod tests {
 
     /// Test an environment variable LEAPS_DT_FMT.
     #[test]
-    fn test_env_leaps_dt_fmt() {
+    fn test_env_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
         let leaps_table_path = testmod::tmp_leaps_table(
             &test_dir,
@@ -756,7 +756,7 @@ mod tests {
 
     /// Test that an argument --tai-utc-table-dt-fmt has a priority to an environment variable LEAPS_DT_FMT
     #[test]
-    fn test_arg_leaps_dt_fmt_against_env() {
+    fn test_arg_tai_utc_table_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
         let leaps_table_path = testmod::tmp_leaps_table(
             &test_dir,

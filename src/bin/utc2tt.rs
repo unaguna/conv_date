@@ -52,7 +52,7 @@
 //!     it uses the default: `tai-utc.txt` in directory of executable file.
 //!     If the default file also does not exist, use the built-in table in the program.
 //!
-//! - `--tai-utc-table-dt-fmt <leaps_dt_fmt>`
+//! - `--tai-utc-table-dt-fmt <tai_utc_table_dt_fmt>`
 //!
 //!     [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in TAI-UTC table file.
 //!     It will be used when you use your TAI-UTC table file with the option `--tai-utc-table`.

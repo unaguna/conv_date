@@ -70,7 +70,7 @@ pub fn get_print_line(params: &Parameters) -> fn(&mut dyn Write, &str, &str) -> 
 /// Command arguments of convdate
 pub struct Arguments<'a> {
     matches: ArgMatches<'a>,
-    leaps_dt_fmt: Option<String>,
+    tai_utc_table_dt_fmt: Option<String>,
     dt_fmt: Option<String>,
     io_pair_flg: bool,
     leaps_path: Option<String>,
@@ -114,7 +114,7 @@ impl Arguments<'_> {
             );
         let matches: ArgMatches<'a> = app.get_matches_from(args);
         Arguments::<'a> {
-            leaps_dt_fmt: matches
+            tai_utc_table_dt_fmt: matches
                 .value_of("tai_utc_table_dt_fmt")
                 .map(|s| s.to_string()),
             dt_fmt: matches.value_of("dt_fmt").map(|s| s.to_string()),
@@ -130,8 +130,8 @@ impl Arguments<'_> {
         self.dt_fmt.as_ref().map(|s| s.as_str())
     }
 
-    pub fn get_leaps_dt_fmt(&self) -> Option<&str> {
-        self.leaps_dt_fmt.as_ref().map(|s| s.as_str())
+    pub fn get_tai_utc_table_dt_fmt(&self) -> Option<&str> {
+        self.tai_utc_table_dt_fmt.as_ref().map(|s| s.as_str())
     }
 
     pub fn get_leaps_path(&self) -> Option<&str> {
@@ -151,7 +151,7 @@ impl Arguments<'_> {
 /// Environment variables which convdate uses
 pub struct EnvValues {
     dt_fmt: Option<String>,
-    leaps_dt_fmt: Option<String>,
+    tai_utc_table_dt_fmt: Option<String>,
     leaps_path: Option<String>,
 }
 
@@ -163,7 +163,7 @@ impl EnvValues {
             .collect::<HashMap<_, _>>();
         EnvValues {
             dt_fmt: map.get("DT_FMT").map(|s| s.to_string()),
-            leaps_dt_fmt: map.get("LEAPS_DT_FMT").map(|s| s.to_string()),
+            tai_utc_table_dt_fmt: map.get("LEAPS_DT_FMT").map(|s| s.to_string()),
             leaps_path: map.get("LEAPS_TABLE").map(|s| s.to_string()),
         }
     }
@@ -172,8 +172,8 @@ impl EnvValues {
         self.dt_fmt.as_ref().map(|s| s.as_str())
     }
 
-    pub fn get_leaps_dt_fmt(&self) -> Option<&str> {
-        self.leaps_dt_fmt.as_ref().map(|s| s.as_str())
+    pub fn get_tai_utc_table_dt_fmt(&self) -> Option<&str> {
+        self.tai_utc_table_dt_fmt.as_ref().map(|s| s.as_str())
     }
 
     pub fn get_leaps_path(&self) -> Option<&str> {
@@ -183,7 +183,7 @@ impl EnvValues {
 
 pub struct Parameters<'a> {
     dt_fmt: &'a str,
-    leaps_dt_fmt: &'a str,
+    tai_utc_table_dt_fmt: &'a str,
     leaps_path: Option<PathBuf>,
     io_pair_flg: bool,
 }
@@ -192,7 +192,7 @@ impl Parameters<'_> {
     pub fn new<'a>(args: &'a Arguments, env_vars: &'a EnvValues) -> Parameters<'a> {
         return Parameters {
             dt_fmt: Parameters::decide_dt_fmt(args, env_vars),
-            leaps_dt_fmt: Parameters::decide_leaps_dt_fmt(args, env_vars),
+            tai_utc_table_dt_fmt: Parameters::decide_tai_utc_table_dt_fmt(args, env_vars),
             leaps_path: Parameters::decide_leaps_path(args, env_vars),
             io_pair_flg: args.io_pair_flg,
         };
@@ -202,8 +202,8 @@ impl Parameters<'_> {
         return &self.dt_fmt;
     }
 
-    pub fn get_leaps_dt_fmt(&self) -> &str {
-        return &self.leaps_dt_fmt;
+    pub fn get_tai_utc_table_dt_fmt(&self) -> &str {
+        return &self.tai_utc_table_dt_fmt;
     }
 
     fn decide_dt_fmt<'a>(args: &'a Arguments, env_vars: &'a EnvValues) -> &'a str {
@@ -212,9 +212,9 @@ impl Parameters<'_> {
             .unwrap_or(DT_FMT)
     }
 
-    fn decide_leaps_dt_fmt<'a>(args: &'a Arguments, env_vars: &'a EnvValues) -> &'a str {
-        args.get_leaps_dt_fmt()
-            .or_else(|| env_vars.get_leaps_dt_fmt())
+    fn decide_tai_utc_table_dt_fmt<'a>(args: &'a Arguments, env_vars: &'a EnvValues) -> &'a str {
+        args.get_tai_utc_table_dt_fmt()
+            .or_else(|| env_vars.get_tai_utc_table_dt_fmt())
             .unwrap_or(DT_FMT)
     }
 
