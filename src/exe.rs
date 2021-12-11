@@ -14,8 +14,8 @@ pub mod utc2tt;
 #[cfg(test)]
 mod testmod;
 
-const LEAPS_TABLE_FILENAME: &str = "tai-utc.txt";
-const LEAPS_TABLE: &str = include_str!("tai-utc.txt");
+const TAI_UTC_TABLE_FILENAME: &str = "tai-utc.txt";
+const TAI_UTC_TABLE: &str = include_str!("tai-utc.txt");
 pub const EXIT_CODE_OK: i32 = 0;
 pub const EXIT_CODE_NG: i32 = 1;
 pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
@@ -47,7 +47,7 @@ pub fn load_leaps(
             DiffTaiUtc::from_lines(leaps_lines, datetime_fmt)
         }
         None => {
-            let leaps_lines: Vec<_> = LEAPS_TABLE.split("\n").collect();
+            let leaps_lines: Vec<_> = TAI_UTC_TABLE.split("\n").collect();
             DiffTaiUtc::from_lines(leaps_lines, datetime_fmt)
         }
     }
@@ -236,7 +236,7 @@ impl Parameters<'_> {
         // If default file exists, use it.
         let mut exe_path = env::current_exe().unwrap();
         exe_path.pop();
-        exe_path.push(LEAPS_TABLE_FILENAME);
+        exe_path.push(TAI_UTC_TABLE_FILENAME);
         if exe_path.exists() {
             return Some(exe_path);
         }
