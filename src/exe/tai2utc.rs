@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn test_input_dt_illegal_against_default_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -128,7 +128,7 @@ mod tests {
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
         ];
-        let env_vars = HashMap::from([("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap())]);
+        let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
@@ -160,11 +160,11 @@ mod tests {
         );
     }
 
-    /// Test error when leaps data are illegal.
+    /// Test error when TAI-UTC table data are illegal.
     #[test]
-    fn test_leaps_illegal() {
+    fn test_tai_utc_table_illegal() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -187,7 +187,7 @@ mod tests {
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
         ];
-        let env_vars = HashMap::from([("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap())]);
+        let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
@@ -206,11 +206,11 @@ mod tests {
         );
     }
 
-    /// Test error when leaps datetimes are illegal.
+    /// Test error when datetimes in TAI-UTC table are illegal.
     #[test]
-    fn test_leaps_dt_illegal_against_default_tai_utc_table_dt_fmt() {
+    fn test_tai_utc_table_dt_illegal_against_default_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -233,7 +233,7 @@ mod tests {
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
         ];
-        let env_vars = HashMap::from([("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap())]);
+        let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
@@ -254,8 +254,8 @@ mod tests {
 
     /// Test error when an environment variable TAI_UTC_TABLE is a path which is not exists
     #[test]
-    fn test_env_leaps_table_not_exist() {
-        let leaps_table_path = "/tmp/dummy/not_exists.txt";
+    fn test_env_tai_utc_table_not_exist() {
+        let tai_utc_table_path = "/tmp/dummy/not_exists.txt";
 
         let args = vec![
             EXE_NAME,
@@ -270,7 +270,7 @@ mod tests {
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
         ];
-        let env_vars = HashMap::from([("TAI_UTC_TABLE", leaps_table_path)]);
+        let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path)]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
@@ -291,9 +291,9 @@ mod tests {
 
     /// Test an argument --tai-utc-table.
     #[test]
-    fn test_arg_leaps_table() {
+    fn test_arg_tai_utc_table() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -316,7 +316,7 @@ mod tests {
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
             "--tai-utc-table",
-            leaps_table_path.to_str().unwrap(),
+            tai_utc_table_path.to_str().unwrap(),
         ];
         let env_vars: HashMap<&str, &str> = HashMap::from([]);
         let mut stdout_buf = Vec::<u8>::new();
@@ -344,8 +344,8 @@ mod tests {
 
     /// Test error when an argument --tai-utc-table is a path which is not exists
     #[test]
-    fn test_arg_leaps_table_not_exist() {
-        let leaps_table_path = "/tmp/dummy/not_exists.txt";
+    fn test_arg_tai_utc_table_not_exist() {
+        let tai_utc_table_path = "/tmp/dummy/not_exists.txt";
 
         let args = vec![
             EXE_NAME,
@@ -360,7 +360,7 @@ mod tests {
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
             "--tai-utc-table",
-            leaps_table_path,
+            tai_utc_table_path,
         ];
         let env_vars: HashMap<&str, &str> = HashMap::from([]);
         let mut stdout_buf = Vec::<u8>::new();
@@ -383,9 +383,9 @@ mod tests {
 
     /// Test an environment variable TAI_UTC_TABLE.
     #[test]
-    fn test_env_leaps_table() {
+    fn test_env_tai_utc_table() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -408,7 +408,7 @@ mod tests {
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
         ];
-        let env_vars = HashMap::from([("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap())]);
+        let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
@@ -434,9 +434,9 @@ mod tests {
 
     /// Test that an argument --tai-utc-table has a priority to an environment variable TAI_UTC_TABLE.
     #[test]
-    fn test_arg_leaps_table_against_env() {
+    fn test_arg_tai_utc_table_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -445,8 +445,8 @@ mod tests {
             ],
         )
         .unwrap();
-        let dummy_leaps_table_path =
-            testmod::tmp_text_file(&test_dir, "dummy_leap.txt", &vec!["XXX"]).unwrap();
+        let dummy_tai_utc_table_path =
+            testmod::tmp_text_file(&test_dir, "dummy_tai_utc_table.txt", &vec!["XXX"]).unwrap();
 
         let args = vec![
             EXE_NAME,
@@ -461,9 +461,10 @@ mod tests {
             "2017-01-01T00:00:08",
             "2017-01-01T00:00:09",
             "--tai-utc-table",
-            leaps_table_path.to_str().unwrap(),
+            tai_utc_table_path.to_str().unwrap(),
         ];
-        let env_vars = HashMap::from([("TAI_UTC_TABLE", dummy_leaps_table_path.to_str().unwrap())]);
+        let env_vars =
+            HashMap::from([("TAI_UTC_TABLE", dummy_tai_utc_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
@@ -491,7 +492,7 @@ mod tests {
     #[test]
     fn test_arg_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -516,7 +517,7 @@ mod tests {
             "--dt-fmt",
             "%Y%m%d%H%M%S",
         ];
-        let env_vars = HashMap::from([("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap())]);
+        let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
@@ -544,7 +545,7 @@ mod tests {
     #[test]
     fn test_env_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -568,7 +569,7 @@ mod tests {
             "20170101000009",
         ];
         let env_vars = HashMap::from([
-            ("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap()),
+            ("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap()),
             ("DT_FMT", "%Y%m%d%H%M%S"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();
@@ -598,7 +599,7 @@ mod tests {
     #[test]
     fn test_arg_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -624,7 +625,7 @@ mod tests {
             "%Y/%m/%d-%H:%M:%S",
         ];
         let env_vars = HashMap::from([
-            ("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap()),
+            ("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap()),
             ("DT_FMT", "%Y%m%d%H%M%S"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();
@@ -654,7 +655,7 @@ mod tests {
     #[test]
     fn test_arg_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "20120701000000000 5",
@@ -679,7 +680,7 @@ mod tests {
             "--tai-utc-table-dt-fmt",
             "%Y%m%d%H%M%S%3f",
         ];
-        let env_vars = HashMap::from([("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap())]);
+        let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
@@ -707,7 +708,7 @@ mod tests {
     #[test]
     fn test_env_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "20120701000000000 5",
@@ -731,7 +732,7 @@ mod tests {
             "2017-01-01T00:00:09",
         ];
         let env_vars = HashMap::from([
-            ("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap()),
+            ("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap()),
             ("TAI_UTC_TABLE_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();
@@ -761,7 +762,7 @@ mod tests {
     #[test]
     fn test_arg_tai_utc_table_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_tai_utc_table(
+        let tai_utc_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012/07/01-00:00:00 5",
@@ -787,7 +788,7 @@ mod tests {
             "%Y/%m/%d-%H:%M:%S",
         ];
         let env_vars = HashMap::from([
-            ("TAI_UTC_TABLE", leaps_table_path.to_str().unwrap()),
+            ("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap()),
             ("TAI_UTC_TABLE_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
         let mut stdout_buf = Vec::<u8>::new();

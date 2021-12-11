@@ -99,7 +99,7 @@ mod tests {
         NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33),
         15
     )]
-    fn test_leaps_utc_from_line(
+    fn test_diff_tai_utc_from_line(
         #[case] line: &str,
         #[case] sep: &str,
         #[case] fmt: &str,
@@ -118,7 +118,7 @@ mod tests {
     }
 
     #[test]
-    fn test_leaps_utc_from_illegal_line() {
+    fn test_diff_tai_utc_from_illegal_line() {
         let line = "2017-01-02T11:22:33 15 1";
         let result = DiffTaiUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
 
@@ -126,7 +126,7 @@ mod tests {
     }
 
     #[test]
-    fn test_leaps_utc_from_illegal_datetime() {
+    fn test_diff_tai_utc_from_illegal_datetime() {
         let line = "2017-01-0211:22:33 15";
         let result = DiffTaiUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
 
