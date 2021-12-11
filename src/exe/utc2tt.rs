@@ -198,7 +198,7 @@ mod tests {
             format!(
                 "{}: {}\n",
                 exe::exe_name(),
-                "Illegal leap definition: 2015-07-01T00:00:00 A"
+                "Illegal definition of TAI-UTC difference: 2015-07-01T00:00:00 A"
             )
         );
     }
@@ -244,7 +244,7 @@ mod tests {
             format!(
                 "{}: {}\n",
                 exe::exe_name(),
-                "Illegal leap definition (datetime): 2015-07-0100:00:00"
+                "Illegal definition of TAI-UTC difference (datetime): 2015-07-0100:00:00"
             )
         );
     }
