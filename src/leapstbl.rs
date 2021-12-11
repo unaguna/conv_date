@@ -31,8 +31,8 @@ impl DiffTaiUtc {
     /// use convdate::DiffTaiUtc;
     /// use chrono::NaiveDate;
     ///
-    /// let leap_line = DiffTaiUtc::from_line("2017-01-01T00:00:00 37", " ", "%Y-%m-%dT%H:%M:%S");
-    /// assert_eq!(leap_line, Ok(DiffTaiUtc {
+    /// let diff_tai_utc = DiffTaiUtc::from_line("2017-01-01T00:00:00 37", " ", "%Y-%m-%dT%H:%M:%S");
+    /// assert_eq!(diff_tai_utc, Ok(DiffTaiUtc {
     ///     datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
     ///     diff_seconds: 37,
     /// }));
