@@ -3,9 +3,9 @@ use std::path::PathBuf;
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum Error {
     #[error("Illegal leap definition: {0}")]
-    LeapTableParseError(String),
+    TaiUtcTableParseError(String),
     #[error("Illegal leap definition (datetime): {0}")]
-    LeapTableDatetimeParseError(String),
+    TaiUtcTableDatetimeParseError(String),
     #[error("The datetime is too low: {0}")]
     DatetimeTooLowError(String),
     #[error("Cannot parse the datetime: {0}")]

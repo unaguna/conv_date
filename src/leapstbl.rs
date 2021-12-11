@@ -40,15 +40,15 @@ impl DiffTaiUtc {
     pub fn from_line(line: &str, sep: &str, fmt: &str) -> Result<DiffTaiUtc, Error> {
         let parts: Vec<&str> = line.splitn(3, sep).collect();
         if parts.len() != 2 {
-            Err(Error::LeapTableParseError(line.to_string()))?;
+            Err(Error::TaiUtcTableParseError(line.to_string()))?;
         }
 
         let datetime = NaiveDateTime::parse_from_str(parts[0], fmt)
-            .map_err(|_| Error::LeapTableDatetimeParseError(parts[0].to_string()))?;
+            .map_err(|_| Error::TaiUtcTableDatetimeParseError(parts[0].to_string()))?;
 
         let diff_seconds: i64 = parts[1]
             .parse()
-            .map_err(|_| Error::LeapTableParseError(line.to_string()))?;
+            .map_err(|_| Error::TaiUtcTableParseError(line.to_string()))?;
 
         Ok(DiffTaiUtc {
             datetime,
@@ -122,7 +122,7 @@ mod tests {
         let line = "2017-01-02T11:22:33 15 1";
         let result = DiffTaiUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
 
-        assert_eq!(result, Err(Error::LeapTableParseError(line.to_string())))
+        assert_eq!(result, Err(Error::TaiUtcTableParseError(line.to_string())))
     }
 
     #[test]
@@ -132,7 +132,7 @@ mod tests {
 
         assert_eq!(
             result,
-            Err(Error::LeapTableDatetimeParseError(
+            Err(Error::TaiUtcTableDatetimeParseError(
                 "2017-01-0211:22:33".to_string()
             ))
         )
