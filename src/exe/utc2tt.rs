@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn test_input_dt_illegal_against_default_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -164,7 +164,7 @@ mod tests {
     #[test]
     fn test_leaps_illegal() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -210,7 +210,7 @@ mod tests {
     #[test]
     fn test_leaps_dt_illegal_against_default_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -293,7 +293,7 @@ mod tests {
     #[test]
     fn test_arg_leaps_table() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -385,7 +385,7 @@ mod tests {
     #[test]
     fn test_env_leaps_table() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -436,7 +436,7 @@ mod tests {
     #[test]
     fn test_arg_leaps_table_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -491,7 +491,7 @@ mod tests {
     #[test]
     fn test_arg_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -544,7 +544,7 @@ mod tests {
     #[test]
     fn test_env_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -598,7 +598,7 @@ mod tests {
     #[test]
     fn test_arg_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012-07-01T00:00:00 5",
@@ -654,7 +654,7 @@ mod tests {
     #[test]
     fn test_arg_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "20120701000000000 5",
@@ -707,7 +707,7 @@ mod tests {
     #[test]
     fn test_env_tai_utc_table_dt_fmt() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "20120701000000000 5",
@@ -761,7 +761,7 @@ mod tests {
     #[test]
     fn test_arg_tai_utc_table_dt_fmt_against_env() {
         let test_dir = testmod::tmp_dir(Some("")).unwrap();
-        let leaps_table_path = testmod::tmp_leaps_table(
+        let leaps_table_path = testmod::tmp_tai_utc_table(
             &test_dir,
             &vec![
                 "2012/07/01-00:00:00 5",
