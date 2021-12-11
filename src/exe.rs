@@ -32,23 +32,23 @@ pub fn exe_name() -> String {
         .to_string();
 }
 
-pub fn load_leaps(
-    leaps_file_path: Option<&PathBuf>,
+pub fn load_tai_utc_table(
+    table_file_path: Option<&PathBuf>,
     datetime_fmt: &str,
 ) -> Result<Vec<DiffTaiUtc>, Error> {
-    match leaps_file_path {
-        Some(leaps_file_path) => {
-            let leaps_file = File::open(leaps_file_path)
-                .map_err(|_| Error::TaiUtcTableIOError(leaps_file_path.clone()))?;
-            let leaps_lines = BufReader::new(leaps_file)
+    match table_file_path {
+        Some(table_file_path) => {
+            let table_file = File::open(table_file_path)
+                .map_err(|_| Error::TaiUtcTableIOError(table_file_path.clone()))?;
+            let table_lines = BufReader::new(table_file)
                 .lines()
                 .collect::<Result<Vec<_>, _>>()
-                .map_err(|_| Error::TaiUtcTableNotTextError(leaps_file_path.clone()))?;
-            DiffTaiUtc::from_lines(leaps_lines, datetime_fmt)
+                .map_err(|_| Error::TaiUtcTableNotTextError(table_file_path.clone()))?;
+            DiffTaiUtc::from_lines(table_lines, datetime_fmt)
         }
         None => {
-            let leaps_lines: Vec<_> = TAI_UTC_TABLE.split("\n").collect();
-            DiffTaiUtc::from_lines(leaps_lines, datetime_fmt)
+            let table_lines: Vec<_> = TAI_UTC_TABLE.split("\n").collect();
+            DiffTaiUtc::from_lines(table_lines, datetime_fmt)
         }
     }
 }
