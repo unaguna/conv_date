@@ -48,7 +48,7 @@
 //!     It specifies a file which contains definition of leaps.
 //!     If you use it, the option `--tai-utc-table-dt-fmt` may be useful.
 //!
-//!     If both of this option and an environment variable `LEAPS_TABLE` are not specified,
+//!     If both of this option and an environment variable `TAI_UTC_TABLE` are not specified,
 //!     it uses the default: `tai-utc.txt` in directory of executable file.
 //!     If the default file also does not exist, use the built-in table in the program.
 //!
@@ -75,7 +75,7 @@
 //!
 //!     Look for a description for an option `--dt-fmt`.
 //!
-//! - `LEAPS_TABLE`
+//! - `TAI_UTC_TABLE`
 //!
 //!     Look for a description for an option `--tai-utc-table`.
 //!

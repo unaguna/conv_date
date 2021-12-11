@@ -102,7 +102,7 @@ impl Arguments<'_> {
             )
             .arg(
                 Arg::with_name("tai_utc_table_file")
-                    .help("Filepath of TAI-UTC table file. If it is not specified, the environment variable 'LEAPS_TABLE' is used. If both of them are not specified, the default file ({binaries_directory}/tai-utc.txt) is used. If the default file also does not exist, use the built-in table in the program.")
+                    .help("Filepath of TAI-UTC table file. If it is not specified, the environment variable 'TAI_UTC_TABLE' is used. If both of them are not specified, the default file ({binaries_directory}/tai-utc.txt) is used. If the default file also does not exist, use the built-in table in the program.")
                     .takes_value(true)
                     .long("tai-utc-table"),
             )
@@ -164,7 +164,7 @@ impl EnvValues {
         EnvValues {
             dt_fmt: map.get("DT_FMT").map(|s| s.to_string()),
             tai_utc_table_dt_fmt: map.get("LEAPS_DT_FMT").map(|s| s.to_string()),
-            tai_utc_table_path: map.get("LEAPS_TABLE").map(|s| s.to_string()),
+            tai_utc_table_path: map.get("TAI_UTC_TABLE").map(|s| s.to_string()),
         }
     }
 
