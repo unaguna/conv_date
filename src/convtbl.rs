@@ -1,5 +1,6 @@
 use crate::error::Error;
-use chrono::NaiveDateTime;
+use crate::normalize_leap;
+use chrono::{Duration, NaiveDateTime};
 
 /// Difference (TAI - UTC) and the datetime at which it is applied
 ///
@@ -153,6 +154,50 @@ pub struct DiffUtcTai {
     pub diff_seconds: i64,
     /// The part of the difference (UTC - TAI) that is not carried forward to the minute.
     pub corr_seconds: u32,
+}
+
+/// UTC-TAI conversion table
+///
+/// It expresses the UTC-TAI table; it is used for conversion from TAI to UTC.
+///
+/// # As Iterable Object
+///
+/// It behaves as an iterable object of row.
+pub struct UtcTaiTable {
+    diff_list: Vec<DiffUtcTai>,
+}
+
+impl UtcTaiTable {
+    pub fn from_tai_utc_table(tai_utc_table: &TaiUtcTable) -> UtcTaiTable {
+        let mut diff_list = Vec::new();
+        let mut prev_diff = i64::MAX;
+        for diff_tai_utc in tai_utc_table.iter() {
+            if prev_diff < diff_tai_utc.diff_seconds {
+                let corr_seconds = diff_tai_utc.diff_seconds - prev_diff;
+                diff_list.push(DiffUtcTai {
+                    datetime: normalize_leap(&diff_tai_utc.datetime)
+                        + Duration::seconds(diff_tai_utc.diff_seconds - corr_seconds),
+                    diff_seconds: -diff_tai_utc.diff_seconds,
+                    corr_seconds: corr_seconds as u32,
+                })
+            }
+            diff_list.push(DiffUtcTai {
+                datetime: normalize_leap(&diff_tai_utc.datetime)
+                    + Duration::seconds(diff_tai_utc.diff_seconds),
+                diff_seconds: -diff_tai_utc.diff_seconds,
+                corr_seconds: 0,
+            });
+            prev_diff = diff_tai_utc.diff_seconds;
+        }
+        return UtcTaiTable { diff_list };
+    }
+}
+
+impl std::ops::Deref for UtcTaiTable {
+    type Target = [DiffUtcTai];
+    fn deref(&self) -> &[DiffUtcTai] {
+        self.diff_list.deref()
+    }
 }
 
 #[cfg(test)]

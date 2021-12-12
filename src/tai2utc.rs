@@ -1,4 +1,4 @@
-use crate::{error::Error, normalize_leap, DiffTaiUtc, DiffUtcTai};
+use crate::{error::Error, DiffUtcTai, TaiUtcTable, UtcTaiTable};
 use chrono::{Duration, NaiveDateTime, Timelike};
 
 /// Pick the diff object to use for calc utc from the datetime.
@@ -9,7 +9,7 @@ use chrono::{Duration, NaiveDateTime, Timelike};
 /// * `utc_tai_table` - A UTC-TAI table
 fn pick_dominant_diff<'a>(
     datetime: &NaiveDateTime,
-    utc_tai_table: &'a [DiffUtcTai],
+    utc_tai_table: &'a UtcTaiTable,
 ) -> Result<&'a DiffUtcTai, Error> {
     // 線形探索
     let mut prev_diff: Option<&DiffUtcTai> = None;
@@ -23,30 +23,6 @@ fn pick_dominant_diff<'a>(
         Some(diff_utc_tai) => Ok(diff_utc_tai),
         None => Err(Error::DatetimeTooLowError(datetime.to_string()))?,
     };
-}
-
-fn convert_table(tai_utc_table: &[DiffTaiUtc]) -> Vec<DiffUtcTai> {
-    let mut utc_tai_table = Vec::new();
-    let mut prev_diff = i64::MAX;
-    for diff_tai_utc in tai_utc_table.iter() {
-        if prev_diff < diff_tai_utc.diff_seconds {
-            let corr_seconds = diff_tai_utc.diff_seconds - prev_diff;
-            utc_tai_table.push(DiffUtcTai {
-                datetime: normalize_leap(&diff_tai_utc.datetime)
-                    + Duration::seconds(diff_tai_utc.diff_seconds - corr_seconds),
-                diff_seconds: -diff_tai_utc.diff_seconds,
-                corr_seconds: corr_seconds as u32,
-            })
-        }
-        utc_tai_table.push(DiffUtcTai {
-            datetime: normalize_leap(&diff_tai_utc.datetime)
-                + Duration::seconds(diff_tai_utc.diff_seconds),
-            diff_seconds: -diff_tai_utc.diff_seconds,
-            corr_seconds: 0,
-        });
-        prev_diff = diff_tai_utc.diff_seconds;
-    }
-    return utc_tai_table;
 }
 
 /// Convert datetime
@@ -83,11 +59,7 @@ fn convert_table(tai_utc_table: &[DiffTaiUtc]) -> Vec<DiffUtcTai> {
 /// # See also
 /// * [`tai2utc_dt`] - It is same as `tai2utc`, except that the argument and the result are [`NaiveDateTime`].
 /// * [`tai2utc`](../tai2utc/index.html) (Binary crate) - The executable program which do same conversion.
-pub fn tai2utc(
-    datetime: &str,
-    tai_utc_table: &[DiffTaiUtc],
-    dt_fmt: &str,
-) -> Result<String, Error> {
+pub fn tai2utc(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
     let utc = tai2utc_dt(&datetime, tai_utc_table)?;
@@ -129,9 +101,9 @@ pub fn tai2utc(
 /// * [`tai2utc`](../tai2utc/index.html) (Binary crate) - The executable program which do same conversion.
 pub fn tai2utc_dt(
     datetime: &NaiveDateTime,
-    tai_utc_table: &[DiffTaiUtc],
+    tai_utc_table: &TaiUtcTable,
 ) -> Result<NaiveDateTime, Error> {
-    let utc_tai_table = convert_table(tai_utc_table);
+    let utc_tai_table = UtcTaiTable::from_tai_utc_table(tai_utc_table);
     return pick_dominant_diff(datetime, &utc_tai_table).map(|diff_utc_tai| {
         let mut datetime_tmp = datetime.clone();
         datetime_tmp += Duration::seconds(diff_utc_tai.diff_seconds);
@@ -145,6 +117,7 @@ pub fn tai2utc_dt(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::DiffTaiUtc;
     use chrono::NaiveDate;
     use rstest::*;
 
@@ -193,7 +166,7 @@ mod tests {
                 diff_seconds: 36,
             },
         ];
-        let utc = tai2utc(&tai, &tai_utc_table, DT_FMT);
+        let utc = tai2utc(&tai, &tai_utc_table.into(), DT_FMT);
 
         assert_eq!(utc, Ok(expected_utc.to_string()));
     }
@@ -205,7 +178,7 @@ mod tests {
             datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
             diff_seconds: 36,
         }];
-        let error = tai2utc(&tai, &tai_utc_table, DT_FMT);
+        let error = tai2utc(&tai, &tai_utc_table.into(), DT_FMT);
 
         assert_eq!(error, Err(Error::DatetimeParseError(tai.to_string())))
     }
@@ -223,7 +196,7 @@ mod tests {
                 diff_seconds: 37,
             },
         ];
-        let error = tai2utc(&tai, &tai_utc_table, DT_FMT);
+        let error = tai2utc(&tai, &tai_utc_table.into(), DT_FMT);
 
         assert_eq!(
             error,
