@@ -1,4 +1,5 @@
-use crate::{error::Error, TaiUtcTable, DT_FMT};
+use crate::convtbl::TaiUtcTable;
+use crate::{error::Error, DT_FMT};
 use clap::{App, Arg, ArgMatches, Values};
 use std::collections::HashMap;
 use std::env;

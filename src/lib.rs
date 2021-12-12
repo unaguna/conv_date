@@ -11,7 +11,7 @@
 //! # Caution
 //! *This library crate is being adjusted. There are plans to make disruptive changes in future updates.*
 
-mod convtbl;
+pub mod convtbl;
 pub mod error;
 #[doc(hidden)]
 pub mod exe;
@@ -21,7 +21,6 @@ mod tt2utc;
 mod utc2tai;
 mod utc2tt;
 use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike};
-pub use convtbl::{DiffTaiUtc, DiffUtcTai, TaiUtcTable, UtcTaiTable};
 pub use tai2utc::{tai2utc, tai2utc_dt};
 pub use tt::{tai2tt, tai2tt_dt, tt2tai, tt2tai_dt};
 pub use tt2utc::{tt2utc, tt2utc_dt};

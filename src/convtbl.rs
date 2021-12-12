@@ -1,3 +1,5 @@
+//! Provide tables for time system conversion.
+//!
 use crate::error::Error;
 use crate::normalize_leap;
 use chrono::{Duration, NaiveDateTime};
@@ -31,7 +33,7 @@ impl DiffTaiUtc {
     ///
     /// # Examples
     /// ```
-    /// use convdate::DiffTaiUtc;
+    /// use convdate::convtbl::DiffTaiUtc;
     /// use chrono::NaiveDate;
     ///
     /// let diff_tai_utc = DiffTaiUtc::from_line("2017-01-01T00:00:00 37", " ", "%Y-%m-%dT%H:%M:%S");
@@ -69,7 +71,7 @@ impl DiffTaiUtc {
 /// It behaves as an iterable object of row; for example:
 ///
 /// ```
-/// use convdate::TaiUtcTable;
+/// use convdate::convtbl::TaiUtcTable;
 /// use chrono::NaiveDate;
 ///
 /// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
@@ -171,7 +173,7 @@ pub struct DiffUtcTai {
 /// This object is created from [`TaiUtcTable`]; for example:
 ///
 /// ```
-/// use convdate::{TaiUtcTable, UtcTaiTable};
+/// use convdate::convtbl::{TaiUtcTable, UtcTaiTable};
 /// use chrono::NaiveDate;
 ///
 /// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();

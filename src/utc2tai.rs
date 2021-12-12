@@ -1,4 +1,5 @@
-use crate::{error::Error, normalize_leap, TaiUtcTable};
+use crate::convtbl::TaiUtcTable;
+use crate::{error::Error, normalize_leap};
 use chrono::{Duration, NaiveDateTime};
 
 /// Convert datetime
@@ -19,7 +20,8 @@ use chrono::{Duration, NaiveDateTime};
 ///
 /// # Examples
 /// ```
-/// use convdate::{self, TaiUtcTable};
+/// use convdate;
+/// use convdate::convtbl::TaiUtcTable;
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
 /// let tai_utc_table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
@@ -59,7 +61,8 @@ pub fn utc2tai(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Res
 ///
 /// # Examples
 /// ```
-/// use convdate::{self, TaiUtcTable};
+/// use convdate;
+/// use convdate::convtbl::TaiUtcTable;
 /// use chrono::NaiveDate;
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
@@ -89,7 +92,7 @@ pub fn utc2tai_dt(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::DiffTaiUtc;
+    use crate::convtbl::DiffTaiUtc;
     use chrono::NaiveDate;
     use rstest::*;
 
