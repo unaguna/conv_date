@@ -1,4 +1,4 @@
-use crate::{error::Error, DiffTaiUtc};
+use crate::{error::Error, TaiUtcTable};
 use crate::{tai2tt_dt, utc2tai_dt};
 use chrono::NaiveDateTime;
 
@@ -36,7 +36,7 @@ use chrono::NaiveDateTime;
 /// # See also
 /// * [`utc2tt_dt`] - It is same as `utc2tt`, except that the argument and the result are [`NaiveDateTime`].
 /// * [`utc2tt`](../utc2tt/index.html) (Binary crate) - The executable program which do same conversion.
-pub fn utc2tt(datetime: &str, tai_utc_table: &[DiffTaiUtc], dt_fmt: &str) -> Result<String, Error> {
+pub fn utc2tt(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
     let tai = utc2tt_dt(&datetime, tai_utc_table)?;
@@ -78,7 +78,7 @@ pub fn utc2tt(datetime: &str, tai_utc_table: &[DiffTaiUtc], dt_fmt: &str) -> Res
 /// * [`utc2tt`](../utc2tt/index.html) (Binary crate) - The executable program which do same conversion.
 pub fn utc2tt_dt(
     datetime: &NaiveDateTime,
-    tai_utc_table: &[DiffTaiUtc],
+    tai_utc_table: &TaiUtcTable,
 ) -> Result<NaiveDateTime, Error> {
     let tai = utc2tai_dt(datetime, tai_utc_table)?;
     Ok(tai2tt_dt(&tai))
@@ -87,6 +87,7 @@ pub fn utc2tt_dt(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::DiffTaiUtc;
     use chrono::NaiveDate;
     use rstest::*;
 
@@ -135,7 +136,7 @@ mod tests {
                 diff_seconds: 36,
             },
         ];
-        let tai = utc2tt(&utc, &tai_utc_table, DT_FMT);
+        let tai = utc2tt(&utc, &tai_utc_table.into(), DT_FMT);
 
         assert_eq!(tai, Ok(expected_tt.to_string()));
     }
@@ -147,7 +148,7 @@ mod tests {
             datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
             diff_seconds: 36,
         }];
-        let error = utc2tt(&utc, &tai_utc_table, DT_FMT);
+        let error = utc2tt(&utc, &tai_utc_table.into(), DT_FMT);
 
         assert_eq!(error, Err(Error::DatetimeParseError(utc.to_string())))
     }
@@ -165,7 +166,7 @@ mod tests {
                 diff_seconds: 37,
             },
         ];
-        let error = utc2tt(&utc, &tai_utc_table, DT_FMT);
+        let error = utc2tt(&utc, &tai_utc_table.into(), DT_FMT);
 
         assert_eq!(
             error,

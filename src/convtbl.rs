@@ -103,6 +103,35 @@ impl TaiUtcTable {
             .collect::<Result<Vec<_>, _>>()?;
         Ok(TaiUtcTable { diff_list })
     }
+
+    /// Pick the row to use to calculate TAI from the UTC datetime.
+    ///
+    /// # Arguments
+    ///
+    /// * `datetime` - An UTC datetime to convert to TAI
+    pub fn pick_dominant_row<'a>(
+        &'a self,
+        datetime: &NaiveDateTime,
+    ) -> Result<&'a DiffTaiUtc, Error> {
+        // 線形探索
+        let mut prev_diff: Option<&DiffTaiUtc> = None;
+        for diff_utc_tai in self.iter() {
+            if datetime < &diff_utc_tai.datetime {
+                break;
+            }
+            prev_diff = Some(diff_utc_tai);
+        }
+        return match prev_diff {
+            Some(diff_utc_tai) => Ok(diff_utc_tai),
+            None => Err(Error::DatetimeTooLowError(datetime.to_string()))?,
+        };
+    }
+}
+
+impl From<Vec<DiffTaiUtc>> for TaiUtcTable {
+    fn from(diff_list: Vec<DiffTaiUtc>) -> Self {
+        TaiUtcTable { diff_list }
+    }
 }
 
 impl std::ops::Deref for TaiUtcTable {
