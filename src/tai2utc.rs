@@ -1,30 +1,6 @@
-use crate::convtbl::{DiffUtcTai, TaiUtcTable, UtcTaiTable};
+use crate::convtbl::{TaiUtcTable, UtcTaiTable};
 use crate::error::Error;
 use chrono::{Duration, NaiveDateTime, Timelike};
-
-/// Pick the diff object to use for calc utc from the datetime.
-///
-/// # Arguments
-///
-/// * `datetime` - A TAI datetime to convert to utc
-/// * `utc_tai_table` - A UTC-TAI table
-fn pick_dominant_diff<'a>(
-    datetime: &NaiveDateTime,
-    utc_tai_table: &'a UtcTaiTable,
-) -> Result<&'a DiffUtcTai, Error> {
-    // 線形探索
-    let mut prev_diff: Option<&DiffUtcTai> = None;
-    for diff_utc_tai in utc_tai_table.iter() {
-        if datetime < &diff_utc_tai.datetime {
-            break;
-        }
-        prev_diff = Some(diff_utc_tai);
-    }
-    return match prev_diff {
-        Some(diff_utc_tai) => Ok(diff_utc_tai),
-        None => Err(Error::DatetimeTooLowError(datetime.to_string()))?,
-    };
-}
 
 /// Convert datetime
 /// from [TAI](https://en.wikipedia.org/wiki/International_Atomic_Time)
@@ -106,15 +82,17 @@ pub fn tai2utc_dt(
     datetime: &NaiveDateTime,
     tai_utc_table: &TaiUtcTable,
 ) -> Result<NaiveDateTime, Error> {
-    let utc_tai_table = tai_utc_table.into();
-    return pick_dominant_diff(datetime, &utc_tai_table).map(|diff_utc_tai| {
-        let mut datetime_tmp = datetime.clone();
-        datetime_tmp += Duration::seconds(diff_utc_tai.diff_seconds);
-        NaiveDateTime::from_timestamp(
-            datetime_tmp.timestamp(),
-            datetime_tmp.nanosecond() + diff_utc_tai.corr_seconds * 1_000_000_000,
-        )
-    });
+    let utc_tai_table: UtcTaiTable = tai_utc_table.into();
+    return utc_tai_table
+        .pick_dominant_row(datetime)
+        .map(|diff_utc_tai| {
+            let mut datetime_tmp = datetime.clone();
+            datetime_tmp += Duration::seconds(diff_utc_tai.diff_seconds);
+            NaiveDateTime::from_timestamp(
+                datetime_tmp.timestamp(),
+                datetime_tmp.nanosecond() + diff_utc_tai.corr_seconds * 1_000_000_000,
+            )
+        });
 }
 
 #[cfg(test)]

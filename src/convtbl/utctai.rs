@@ -1,5 +1,5 @@
 use super::TaiUtcTable;
-use crate::normalize_leap;
+use crate::{error::Error, normalize_leap};
 use chrono::{Duration, NaiveDateTime};
 
 /// Difference (UTC - TAI) and the datetime at which it is applied
@@ -44,6 +44,31 @@ pub struct DiffUtcTai {
 ///
 pub struct UtcTaiTable {
     diff_list: Vec<DiffUtcTai>,
+}
+
+impl UtcTaiTable {
+    /// Pick the row to use to calculate UTC from the TAI datetime.
+    ///
+    /// # Arguments
+    ///
+    /// * `datetime` - An TAI datetime to convert to UTC
+    pub fn pick_dominant_row<'a>(
+        &'a self,
+        datetime: &NaiveDateTime,
+    ) -> Result<&'a DiffUtcTai, Error> {
+        // 線形探索
+        let mut prev_diff: Option<&DiffUtcTai> = None;
+        for diff_utc_tai in self.iter() {
+            if datetime < &diff_utc_tai.datetime {
+                break;
+            }
+            prev_diff = Some(diff_utc_tai);
+        }
+        return match prev_diff {
+            Some(diff_utc_tai) => Ok(diff_utc_tai),
+            None => Err(Error::DatetimeTooLowError(datetime.to_string()))?,
+        };
+    }
 }
 
 impl From<&TaiUtcTable> for UtcTaiTable {
