@@ -1,20 +1,15 @@
 [package]
-name = "conv_date"
-version = "0.2.0"
+name = "convdate"
+version = "0.3.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[[bin]]
-name = "utc2tai"
-path = "src/utc2tai/main.rs"
-
-[[bin]]
-name = "tai2utc"
-path = "src/tai2utc/main.rs"
-
 [dependencies]
 chrono = "0.4.19"
+clap = "2.33.3"
+thiserror = "1.0.30"
 
 [dev-dependencies]
+tempfile = "3.2.0"
 rstest = "0.11.0"

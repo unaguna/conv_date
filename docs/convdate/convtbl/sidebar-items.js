@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["DiffTaiUtc","Difference (TAI - UTC) and the datetime at which it is applied"],["DiffUtcTai","Difference (UTC - TAI) and the datetime at which it is applied"],["TaiUtcTable","TAI-UTC conversion table"],["UtcTaiTable","UTC-TAI conversion table"]]});
