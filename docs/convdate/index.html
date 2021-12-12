@@ -1,0 +1,53 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="convdate is a set of tools for converting datetime UTC &lt;=&gt; TAI &lt;=&gt; TT."><meta name="keywords" content="rust, rustlang, rust-lang, convdate"><title>convdate - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script id="default-settings" ></script><script src="../storage.js"></script><script src="../crates.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../favicon.svg"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../convdate/index.html'><div class='logo-container rust-logo'><img src='../rust-logo.png' alt='logo'></div></a><h2 class="location">Crate convdate</h2><div class="block version"><div class="narrow-helper"></div><p>Version 0.3.0</p></div><div class="sidebar-elems"><a id="all-types" href="all.html"><p>See all convdate's items</p></a><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#functions">Functions</a></li></ul></div><div id="sidebar-vars" data-name="convdate" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../wheel.svg"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">convdate</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../src/convdate/lib.rs.html#1-47" title="goto source code">[src]</a></span></h1><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>convdate is a set of tools for converting datetime UTC &lt;=&gt; TAI &lt;=&gt; TT.</p>
+<p>If you want <strong>to know about executables, look for below documents</strong> of binary crates:</p>
+<ul>
+<li><a href="../tai2utc/index.html">tai2utc</a></li>
+<li><a href="../tt2utc/index.html">tt2utc</a></li>
+<li><a href="../utc2tai/index.html">utc2tai</a></li>
+<li><a href="../utc2tt/index.html">utc2tt</a></li>
+</ul>
+<p>This crate provide some features to above binary crates.</p>
+<h1 id="caution" class="section-header"><a href="#caution">Caution</a></h1>
+<p><em>This library crate is being adjusted. There are plans to make disruptive changes in future updates.</em></p>
+</div></details><h2 id="modules" class="section-header"><a href="#modules">Modules</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="mod" href="convtbl/index.html" title="convdate::convtbl mod">convtbl</a></div><div class="item-right docblock-short"><p>Provide tables for time system conversion.</p>
+</div><div class="item-left module-item"><a class="mod" href="error/index.html" title="convdate::error mod">error</a></div><div class="item-right docblock-short"></div></div><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="fn" href="fn.tai2tt.html" title="convdate::tai2tt fn">tai2tt</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/International_Atomic_Time">TAI</a>
+to <a href="https://en.wikipedia.org/wiki/Terrestrial_Time">TT</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.tai2tt_dt.html" title="convdate::tai2tt_dt fn">tai2tt_dt</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/International_Atomic_Time">TAI</a>
+to <a href="https://en.wikipedia.org/wiki/Terrestrial_Time">TT</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.tai2utc.html" title="convdate::tai2utc fn">tai2utc</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/International_Atomic_Time">TAI</a>
+to <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.tai2utc_dt.html" title="convdate::tai2utc_dt fn">tai2utc_dt</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/International_Atomic_Time">TAI</a>
+to <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.tt2tai.html" title="convdate::tt2tai fn">tt2tai</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/Terrestrial_Time">TT</a>
+to <a href="https://en.wikipedia.org/wiki/International_Atomic_Time">TAI</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.tt2tai_dt.html" title="convdate::tt2tai_dt fn">tt2tai_dt</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/Terrestrial_Time">TT</a>
+to <a href="https://en.wikipedia.org/wiki/International_Atomic_Time">TAI</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.tt2utc.html" title="convdate::tt2utc fn">tt2utc</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/Terrestrial_Time">TT</a>
+to <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.tt2utc_dt.html" title="convdate::tt2utc_dt fn">tt2utc_dt</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/Terrestrial_Time">TT</a>
+to <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.utc2tai.html" title="convdate::utc2tai fn">utc2tai</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>
+to <a href="https://en.wikipedia.org/wiki/International_Atomic_Time">TAI</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.utc2tai_dt.html" title="convdate::utc2tai_dt fn">utc2tai_dt</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>
+to <a href="https://en.wikipedia.org/wiki/International_Atomic_Time">TAI</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.utc2tt.html" title="convdate::utc2tt fn">utc2tt</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>
+to <a href="https://en.wikipedia.org/wiki/Terrestrial_Time">TT</a>.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.utc2tt_dt.html" title="convdate::utc2tt_dt fn">utc2tt_dt</a></div><div class="item-right docblock-short"><p>Convert datetime
+from <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>
+to <a href="https://en.wikipedia.org/wiki/Terrestrial_Time">TT</a>.</p>
+</div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../" data-current-crate="convdate" data-search-index-js="../search-index.js" data-search-js="../search.js"></div>
+    <script src="../main.js"></script>
+</body></html>
