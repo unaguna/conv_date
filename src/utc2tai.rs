@@ -1,29 +1,6 @@
-use crate::{error::Error, normalize_leap, DiffTaiUtc};
+use crate::convtbl::TaiUtcTable;
+use crate::{error::Error, normalize_leap};
 use chrono::{Duration, NaiveDateTime};
-
-/// Pick the diff object to use for calc tai from the datetime.
-///
-/// # Arguments
-///
-/// * `datetime` - A datetime to convert to tai
-/// * `tai_utc_table` - A TAI-UTC table
-fn pick_dominant_diff<'a>(
-    datetime: &NaiveDateTime,
-    tai_utc_table: &'a [DiffTaiUtc],
-) -> Result<&'a DiffTaiUtc, Error> {
-    // 線形探索
-    let mut prev_diff: Option<&DiffTaiUtc> = None;
-    for diff_utc_tai in tai_utc_table.iter() {
-        if datetime < &diff_utc_tai.datetime {
-            break;
-        }
-        prev_diff = Some(diff_utc_tai);
-    }
-    return match prev_diff {
-        Some(diff_utc_tai) => Ok(diff_utc_tai),
-        None => Err(Error::DatetimeTooLowError(datetime.to_string()))?,
-    };
-}
 
 /// Convert datetime
 /// from [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)
@@ -43,10 +20,11 @@ fn pick_dominant_diff<'a>(
 ///
 /// # Examples
 /// ```
-/// use convdate::{self, DiffTaiUtc};
+/// use convdate;
+/// use convdate::convtbl::TaiUtcTable;
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
-/// let tai_utc_table = DiffTaiUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// let tai_utc_table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
 ///
 /// let tai = convdate::utc2tai(
 ///     "2017-01-01T12:00:00.000",
@@ -59,11 +37,7 @@ fn pick_dominant_diff<'a>(
 /// # See also
 /// * [`utc2tai_dt`] - It is same as `utc2tai`, except that the argument and the result are [`NaiveDateTime`].
 /// * [`utc2tai`](../utc2tai/index.html) (Binary crate) - The executable program which do same conversion.
-pub fn utc2tai(
-    datetime: &str,
-    tai_utc_table: &[DiffTaiUtc],
-    dt_fmt: &str,
-) -> Result<String, Error> {
+pub fn utc2tai(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
     let tai = utc2tai_dt(&datetime, tai_utc_table)?;
@@ -87,11 +61,12 @@ pub fn utc2tai(
 ///
 /// # Examples
 /// ```
-/// use convdate::{self, DiffTaiUtc};
+/// use convdate;
+/// use convdate::convtbl::TaiUtcTable;
 /// use chrono::NaiveDate;
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
-/// let tai_utc_table = DiffTaiUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// let tai_utc_table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
 ///
 /// let tai = convdate::utc2tai_dt(
 ///     &NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 0),
@@ -105,17 +80,19 @@ pub fn utc2tai(
 /// * [`utc2tai`](../utc2tai/index.html) (Binary crate) - The executable program which do same conversion.
 pub fn utc2tai_dt(
     datetime: &NaiveDateTime,
-    tai_utc_table: &[DiffTaiUtc],
+    tai_utc_table: &TaiUtcTable,
 ) -> Result<NaiveDateTime, Error> {
     let datetime_nm = normalize_leap(datetime);
 
-    return pick_dominant_diff(datetime, tai_utc_table)
+    return tai_utc_table
+        .pick_dominant_row(datetime)
         .map(|diff_tai_utc| datetime_nm + Duration::seconds(diff_tai_utc.diff_seconds));
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::convtbl::DiffTaiUtc;
     use chrono::NaiveDate;
     use rstest::*;
 
@@ -164,7 +141,7 @@ mod tests {
                 diff_seconds: 36,
             },
         ];
-        let tai = utc2tai(&utc, &tai_utc_table, DT_FMT);
+        let tai = utc2tai(&utc, &tai_utc_table.into(), DT_FMT);
 
         assert_eq!(tai, Ok(expected_tai.to_string()));
     }
@@ -176,7 +153,7 @@ mod tests {
             datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
             diff_seconds: 36,
         }];
-        let error = utc2tai(&utc, &tai_utc_table, DT_FMT);
+        let error = utc2tai(&utc, &tai_utc_table.into(), DT_FMT);
 
         assert_eq!(error, Err(Error::DatetimeParseError(utc.to_string())))
     }
@@ -194,7 +171,7 @@ mod tests {
                 diff_seconds: 37,
             },
         ];
-        let error = utc2tai(&utc, &tai_utc_table, DT_FMT);
+        let error = utc2tai(&utc, &tai_utc_table.into(), DT_FMT);
 
         assert_eq!(
             error,

@@ -1,4 +1,5 @@
-use crate::{error::Error, DiffTaiUtc, DT_FMT};
+use crate::convtbl::TaiUtcTable;
+use crate::{error::Error, DT_FMT};
 use clap::{App, Arg, ArgMatches, Values};
 use std::collections::HashMap;
 use std::env;
@@ -35,7 +36,7 @@ pub fn exe_name() -> String {
 pub fn load_tai_utc_table(
     table_file_path: Option<&PathBuf>,
     datetime_fmt: &str,
-) -> Result<Vec<DiffTaiUtc>, Error> {
+) -> Result<TaiUtcTable, Error> {
     match table_file_path {
         Some(table_file_path) => {
             let table_file = File::open(table_file_path)
@@ -44,11 +45,11 @@ pub fn load_tai_utc_table(
                 .lines()
                 .collect::<Result<Vec<_>, _>>()
                 .map_err(|_| Error::TaiUtcTableNotTextError(table_file_path.clone()))?;
-            DiffTaiUtc::from_lines(table_lines, datetime_fmt)
+            TaiUtcTable::from_lines(table_lines, datetime_fmt)
         }
         None => {
             let table_lines: Vec<_> = TAI_UTC_TABLE.split("\n").collect();
-            DiffTaiUtc::from_lines(table_lines, datetime_fmt)
+            TaiUtcTable::from_lines(table_lines, datetime_fmt)
         }
     }
 }
