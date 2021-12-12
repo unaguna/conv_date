@@ -20,10 +20,10 @@ use chrono::NaiveDateTime;
 ///
 /// # Examples
 /// ```
-/// use convdate::{self, DiffTaiUtc};
+/// use convdate::{self, TaiUtcTable};
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
-/// let tai_utc_table = DiffTaiUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// let tai_utc_table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
 ///
 /// let utc = convdate::tt2utc(
 ///     "2017-01-01T12:01:09.000",
@@ -60,11 +60,11 @@ pub fn tt2utc(datetime: &str, tai_utc_table: &[DiffTaiUtc], dt_fmt: &str) -> Res
 ///
 /// # Examples
 /// ```
-/// use convdate::{self, DiffTaiUtc};
+/// use convdate::{self, TaiUtcTable};
 /// use chrono::NaiveDate;
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
-/// let tai_utc_table = DiffTaiUtc::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// let tai_utc_table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
 ///
 /// let utc = convdate::tt2utc_dt(
 ///     &NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 1, 9),

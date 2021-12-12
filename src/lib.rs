@@ -21,7 +21,7 @@ mod tt2utc;
 mod utc2tai;
 mod utc2tt;
 use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike};
-pub use convtbl::DiffTaiUtc;
+pub use convtbl::{DiffTaiUtc, TaiUtcTable};
 pub use tai2utc::{tai2utc, tai2utc_dt};
 pub use tt::{tai2tt, tai2tt_dt, tt2tai, tt2tai_dt};
 pub use tt2utc::{tt2utc, tt2utc_dt};

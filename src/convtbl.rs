@@ -3,8 +3,10 @@ use chrono::NaiveDateTime;
 
 /// Difference (TAI - UTC) and the datetime at which it is applied
 ///
-/// It express a row of [the TAI-UTC table](https://web.archive.org/web/20191019051734/http://maia.usno.navy.mil/ser7/tai-utc.dat).
-/// So `Vec<DiffTaiUtc>` express the TAI-UTC table.
+/// It expresses a row of [the TAI-UTC table](https://www.ietf.org/timezones/data/leap-seconds.list).
+///
+/// # See also
+/// - [`TaiUtcTable`] - It express the TAI-UTC table.
 #[derive(Debug, PartialEq)]
 pub struct DiffTaiUtc {
     /// (UTC) The moment when the difference (TAI - UTC) changes due to a leap second
@@ -55,26 +57,58 @@ impl DiffTaiUtc {
             diff_seconds,
         })
     }
+}
 
-    /// Construct `Vec<DiffTaiUtc>` from lines of the TAI-UTC table file.
+/// TAI-UTC conversion table
+///
+/// It expresses [the TAI-UTC table](https://www.ietf.org/timezones/data/leap-seconds.list); it is used for conversion from UTC to TAI.
+///
+/// # As Iterable Object
+///
+/// It behaves as an iterable object of row; for example:
+///
+/// ```
+/// use convdate::TaiUtcTable;
+/// use chrono::NaiveDate;
+///
+/// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// for row in table.iter() {
+///     assert_eq!(row.datetime, NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0));
+///     assert_eq!(row.diff_seconds, 37);
+/// }
+/// ```
+pub struct TaiUtcTable {
+    diff_list: Vec<DiffTaiUtc>,
+}
+
+impl TaiUtcTable {
+    /// Construct `TaiUtcTable` from lines of the TAI-UTC table file.
     ///
     /// # Arguments
     /// - `lines` - a iterable of lines of the TAI-UTC table file
     /// - `fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of datetimes in the TAI-UTC table file
     ///
     /// # Returns
-    /// Returns the `Vec<DiffTaiUtc>` if `lines` are collect.
+    /// Returns the `TaiUtcTable` if `lines` are collect.
     ///
     /// Returns [`Error`](crate::error::Error) if some of `lines` are illegal.
     // TODO: Add sep to arguments
     pub fn from_lines(
         lines: impl IntoIterator<Item = impl AsRef<str>>,
         fmt: &str,
-    ) -> Result<Vec<DiffTaiUtc>, Error> {
-        lines
+    ) -> Result<TaiUtcTable, Error> {
+        let diff_list: Vec<DiffTaiUtc> = lines
             .into_iter()
             .map(|line| DiffTaiUtc::from_line(line.as_ref(), " ", fmt))
-            .collect::<Result<Vec<_>, _>>()
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(TaiUtcTable { diff_list })
+    }
+}
+
+impl std::ops::Deref for TaiUtcTable {
+    type Target = [DiffTaiUtc];
+    fn deref(&self) -> &[DiffTaiUtc] {
+        self.diff_list.deref()
     }
 }
 
