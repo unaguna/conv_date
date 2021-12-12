@@ -20,8 +20,8 @@ pub fn main_inner(
         params.get_tai_utc_table_path(),
         params.get_tai_utc_table_dt_fmt(),
     );
-    let tai_utc_table = match tai_utc_table {
-        Ok(tai_utc_table) => tai_utc_table,
+    let utc_tai_table = match tai_utc_table {
+        Ok(tai_utc_table) => From::from(&tai_utc_table),
         Err(e) => {
             exe::print_err(stderr, &e);
             return exe::EXIT_CODE_NG;
@@ -34,7 +34,7 @@ pub fn main_inner(
     // calc UTC
     let mut someone_is_err = false;
     for in_tt in args.get_datetimes() {
-        let utc = tt2utc(in_tt, &tai_utc_table, params.get_dt_fmt());
+        let utc = tt2utc(in_tt, &utc_tai_table, params.get_dt_fmt());
 
         match utc {
             Err(e) => {

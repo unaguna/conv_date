@@ -1,4 +1,4 @@
-use crate::convtbl::TaiUtcTable;
+use crate::convtbl::UtcTaiTable;
 use crate::error::Error;
 use crate::{tai2utc_dt, tt2tai_dt};
 use chrono::NaiveDateTime;
@@ -7,11 +7,11 @@ use chrono::NaiveDateTime;
 /// from [TT](https://en.wikipedia.org/wiki/Terrestrial_Time)
 /// to [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time).
 ///
-/// This function takes leap seconds into account along the argument `tai_utc_table`.
+/// This function takes leap seconds into account along the argument `utc_tai_table`.
 ///
 /// # Arguments
 /// * `datetime` - Datetime in TT.
-/// * `tai_utc_table` - The conversion table of TAI - UTC
+/// * `utc_tai_table` - The conversion table of UTC - TAI
 /// * `dt_fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of `datetime`
 ///
 /// # Returns
@@ -26,10 +26,11 @@ use chrono::NaiveDateTime;
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
 /// let tai_utc_table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// let utc_tai_table = From::from(&tai_utc_table);
 ///
 /// let utc = convdate::tt2utc(
 ///     "2017-01-01T12:01:09.000",
-///     &tai_utc_table,
+///     &utc_tai_table,
 ///     "%Y-%m-%dT%H:%M:%S%.3f");
 ///
 /// assert_eq!(utc, Ok("2017-01-01T11:59:59.816".to_string()));
@@ -38,10 +39,10 @@ use chrono::NaiveDateTime;
 /// # See also
 /// * [`tt2utc_dt`] - It is same as `tt2utc`, except that the argument and the result are [`NaiveDateTime`].
 /// * [`tt2utc`](../tt2utc/index.html) (Binary crate) - The executable program which do same conversion.
-pub fn tt2utc(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Result<String, Error> {
+pub fn tt2utc(datetime: &str, utc_tai_table: &UtcTaiTable, dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
-    let tai = tt2utc_dt(&datetime, tai_utc_table)?;
+    let tai = tt2utc_dt(&datetime, utc_tai_table)?;
     Ok(tai.format(dt_fmt).to_string())
 }
 
@@ -49,11 +50,11 @@ pub fn tt2utc(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Resu
 /// from [TT](https://en.wikipedia.org/wiki/Terrestrial_Time)
 /// to [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time).
 ///
-/// This function takes leap seconds into account along the argument `tai_utc_table`.
+/// This function takes leap seconds into account along the argument `utc_tai_table`.
 ///
 /// # Arguments
 /// * `datetime` - Datetime in TT.
-/// * `tai_utc_table` - The conversion table of TAI - UTC
+/// * `utc_tai_table` - The conversion table of UTC - TAI
 ///
 /// # Returns
 /// Returns the datetime in UTC.
@@ -68,10 +69,11 @@ pub fn tt2utc(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Resu
 ///
 /// // Usually, lines read from the file are used as the argument of `from_lines`.
 /// let tai_utc_table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// let utc_tai_table = From::from(&tai_utc_table);
 ///
 /// let utc = convdate::tt2utc_dt(
 ///     &NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 1, 9),
-///     &tai_utc_table);
+///     &utc_tai_table);
 ///
 /// assert_eq!(utc, Ok(NaiveDate::from_ymd(2017, 1, 1).and_hms_milli(11, 59, 59, 816)));
 /// ```
@@ -81,11 +83,11 @@ pub fn tt2utc(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Resu
 /// * [`tt2utc`](../tt2utc/index.html) (Binary crate) - The executable program which do same conversion.
 pub fn tt2utc_dt(
     datetime: &NaiveDateTime,
-    tai_utc_table: &TaiUtcTable,
+    utc_tai_table: &UtcTaiTable,
 ) -> Result<NaiveDateTime, Error> {
     let tai = tt2tai_dt(datetime);
 
-    match tai2utc_dt(&tai, tai_utc_table) {
+    match tai2utc_dt(&tai, utc_tai_table) {
         Err(Error::DatetimeTooLowError(_)) => {
             // 多段階で変換を行う場合、中間の日時文字列がエラーメッセージに使われている場合があるため、入力された日時文字列に置き換える。
             Err(Error::DatetimeTooLowError(datetime.to_string()))
@@ -98,7 +100,7 @@ pub fn tt2utc_dt(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::convtbl::DiffTaiUtc;
+    use crate::convtbl::{DiffTaiUtc, TaiUtcTable};
     use chrono::NaiveDate;
     use rstest::*;
 
@@ -125,7 +127,7 @@ mod tests {
     #[case("2019-12-31T23:59:57.000", "2020-01-01T00:01:07.184")]
     #[case("2020-01-01T00:00:00.000", "2020-01-01T00:01:08.184")]
     fn test_tai2utc(#[case] expected_utc: &str, #[case] tt: &str) {
-        let tai_utc_table = vec![
+        let tai_utc_table: TaiUtcTable = vec![
             DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
@@ -146,8 +148,9 @@ mod tests {
                 datetime: NaiveDate::from_ymd(2020, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
             },
-        ];
-        let utc = tt2utc(&tt, &tai_utc_table.into(), DT_FMT);
+        ]
+        .into();
+        let utc = tt2utc(&tt, &(&tai_utc_table).into(), DT_FMT);
 
         assert_eq!(utc, Ok(expected_utc.to_string()));
     }
@@ -155,11 +158,12 @@ mod tests {
     #[test]
     fn test_error_on_illegal_format() {
         let tt = "2019-12-31 23:59:57.000";
-        let tai_utc_table = vec![DiffTaiUtc {
+        let tai_utc_table: TaiUtcTable = vec![DiffTaiUtc {
             datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
             diff_seconds: 36,
-        }];
-        let error = tt2utc(&tt, &tai_utc_table.into(), DT_FMT);
+        }]
+        .into();
+        let error = tt2utc(&tt, &(&tai_utc_table).into(), DT_FMT);
 
         assert_eq!(error, Err(Error::DatetimeParseError(tt.to_string())))
     }
@@ -167,7 +171,7 @@ mod tests {
     #[test]
     fn test_error_on_too_low_datetime() {
         let tt = "2015-07-01T00:01:08.183";
-        let tai_utc_table = vec![
+        let tai_utc_table: TaiUtcTable = vec![
             DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
                 diff_seconds: 36,
@@ -176,8 +180,9 @@ mod tests {
                 datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
                 diff_seconds: 37,
             },
-        ];
-        let error = tt2utc(&tt, &tai_utc_table.into(), DT_FMT);
+        ]
+        .into();
+        let error = tt2utc(&tt, &(&tai_utc_table).into(), DT_FMT);
 
         assert_eq!(
             error,
