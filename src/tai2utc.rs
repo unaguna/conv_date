@@ -1,14 +1,5 @@
-use crate::{error::Error, normalize_leap, DiffTaiUtc};
+use crate::{error::Error, normalize_leap, DiffTaiUtc, DiffUtcTai};
 use chrono::{Duration, NaiveDateTime, Timelike};
-
-struct DiffUtcTai {
-    // うるう秒によってずれるタイミング (TAI)
-    pub datetime: NaiveDateTime,
-    // うるう秒による累積のずれ (UTC - TAI) のうち、60s=1mとして計算する部分
-    pub diff_seconds: i64,
-    // うるう秒による累積のずれ (UTC - TAI) のうち、分に繰り上がらない部分
-    pub corr_seconds: u32,
-}
 
 /// Pick the diff object to use for calc utc from the datetime.
 ///

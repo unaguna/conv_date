@@ -141,6 +141,20 @@ impl std::ops::Deref for TaiUtcTable {
     }
 }
 
+/// Difference (UTC - TAI) and the datetime at which it is applied
+///
+/// It expresses a row of the UTC-TAI table.
+// TODO: write tests
+#[derive(Debug, PartialEq)]
+pub struct DiffUtcTai {
+    /// (TAI) The moment when the difference (UTC - TAI) changes due to a leap second
+    pub datetime: NaiveDateTime,
+    /// The part of the difference (UTC - TAI) that is calculated as 60s = 1m
+    pub diff_seconds: i64,
+    /// The part of the difference (UTC - TAI) that is not carried forward to the minute.
+    pub corr_seconds: u32,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
