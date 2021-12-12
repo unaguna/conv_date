@@ -103,7 +103,7 @@ pub fn tai2utc_dt(
     datetime: &NaiveDateTime,
     tai_utc_table: &TaiUtcTable,
 ) -> Result<NaiveDateTime, Error> {
-    let utc_tai_table = UtcTaiTable::from_tai_utc_table(tai_utc_table);
+    let utc_tai_table = tai_utc_table.into();
     return pick_dominant_diff(datetime, &utc_tai_table).map(|diff_utc_tai| {
         let mut datetime_tmp = datetime.clone();
         datetime_tmp += Duration::seconds(diff_utc_tai.diff_seconds);

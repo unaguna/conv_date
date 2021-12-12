@@ -160,15 +160,34 @@ pub struct DiffUtcTai {
 ///
 /// It expresses the UTC-TAI table; it is used for conversion from TAI to UTC.
 ///
+/// *Normally, what you need in order to use the functions of this library is [`TaiUtcTable`], and there should be no direct external use of `UtcTaiTable`.*
+///
 /// # As Iterable Object
 ///
 /// It behaves as an iterable object of row.
+///
+/// # Creation new UtcTaiTable
+///
+/// This object is created from [`TaiUtcTable`]; for example:
+///
+/// ```
+/// use convdate::{TaiUtcTable, UtcTaiTable};
+/// use chrono::NaiveDate;
+///
+/// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// let table: UtcTaiTable = (&table).into();
+/// for row in table.iter() {
+///     assert_eq!(row.datetime, NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 37));
+///     assert_eq!(row.diff_seconds, -37);
+/// }
+/// ```
+///
 pub struct UtcTaiTable {
     diff_list: Vec<DiffUtcTai>,
 }
 
-impl UtcTaiTable {
-    pub fn from_tai_utc_table(tai_utc_table: &TaiUtcTable) -> UtcTaiTable {
+impl From<&TaiUtcTable> for UtcTaiTable {
+    fn from(tai_utc_table: &TaiUtcTable) -> Self {
         let mut diff_list = Vec::new();
         let mut prev_diff = i64::MAX;
         for diff_tai_utc in tai_utc_table.iter() {
