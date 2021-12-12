@@ -149,7 +149,8 @@ mod tests {
             },
         ]
         .into();
-        let utc = tai2utc(&tai, &(&tai_utc_table).into(), DT_FMT);
+        let utc_tai_table = From::from(&tai_utc_table);
+        let utc = tai2utc(&tai, &utc_tai_table, DT_FMT);
 
         assert_eq!(utc, Ok(expected_utc.to_string()));
     }
@@ -162,7 +163,8 @@ mod tests {
             diff_seconds: 36,
         }]
         .into();
-        let error = tai2utc(&tai, &(&tai_utc_table).into(), DT_FMT);
+        let utc_tai_table = From::from(&tai_utc_table);
+        let error = tai2utc(&tai, &utc_tai_table, DT_FMT);
 
         assert_eq!(error, Err(Error::DatetimeParseError(tai.to_string())))
     }
@@ -181,7 +183,8 @@ mod tests {
             },
         ]
         .into();
-        let error = tai2utc(&tai, &(&tai_utc_table).into(), DT_FMT);
+        let utc_tai_table = From::from(&tai_utc_table);
+        let error = tai2utc(&tai, &utc_tai_table, DT_FMT);
 
         assert_eq!(
             error,
