@@ -158,4 +158,60 @@ mod tests {
 
         assert_eq!(tai, expected);
     }
+
+    #[rstest]
+    #[case(
+        "2017-01-02T11:22:33.000",
+        "%Y-%m-%dT%H:%M:%S%.3f",
+        Some("2017-01-02T11:23:10.000"),
+        None
+    )]
+    #[case(
+        "2017-01-02T11:22:33.123",
+        "%Y-%m-%dT%H:%M:%S%.3f",
+        Some("2017-01-02T11:23:10.123"),
+        None
+    )]
+    #[case(
+        "2017-01-02T11:22:33",
+        "%Y-%m-%dT%H:%M:%S%.3f",
+        Some("2017-01-02T11:23:10.000"),
+        None
+    )]
+    #[case(
+        "2017-01-02T11:22:33",
+        "%Y-%m-%dT%H:%M:%S",
+        Some("2017-01-02T11:23:10"),
+        None
+    )]
+    #[case(
+        "2017-01-02 11:22:33",
+        "%Y-%m-%d %H:%M:%S",
+        Some("2017-01-02 11:23:10"),
+        None
+    )]
+    #[case(
+        "2017-01-02T11:22:33",
+        "%Y-%m-%d %H:%M:%S",
+        None,
+        Some(Error::DatetimeParseError(utc.to_string()))
+    )]
+    fn test_utc2tai_arg_dt_fmt(
+        #[case] utc: &str,
+        #[case] dt_fmt: &str,
+        #[case] expected_ok: Option<&str>,
+        #[case] expected_err: Option<Error>,
+    ) {
+        let expected = expected_ok
+            .map(ToString::to_string)
+            .ok_or_else(|| expected_err.unwrap());
+
+        let tai_utc_table = vec![DiffTaiUtc {
+            datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
+            diff_seconds: 37,
+        }];
+        let tai = utc2tai(&utc, &tai_utc_table.into(), dt_fmt);
+
+        assert_eq!(tai, expected);
+    }
 }
