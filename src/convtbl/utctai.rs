@@ -123,6 +123,11 @@ mod tests {
         None,
     )]
     #[case(
+        NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 34),
+        Some(DiffUtcTai{datetime: NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 35), diff_seconds: -35, corr_seconds: 0}),
+        None,
+    )]
+    #[case(
         NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 35),
         Some(DiffUtcTai{datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 35), diff_seconds: -36, corr_seconds: 1}),
         None,
