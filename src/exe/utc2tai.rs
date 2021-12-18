@@ -54,9 +54,8 @@ pub fn main_inner(
 
 #[cfg(test)]
 mod tests {
-    use super::super::testmod;
     use super::main_inner;
-    use crate::exe;
+    use crate::{exe, testmod};
     use std::collections::HashMap;
 
     const EXE_NAME: &str = "utc2tt";
