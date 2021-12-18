@@ -200,4 +200,43 @@ mod tests {
             ))
         )
     }
+
+    #[rstest]
+    #[case(
+        NaiveDate::from_ymd(2012, 6, 30).and_hms_milli(23, 59, 59, 1_000),
+        None,
+        Some(Error::DatetimeTooLowError("2012-06-30 23:59:60".to_string())),
+    )]
+    #[case(
+        NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 0),
+        Some(DiffTaiUtc{datetime: NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 0), diff_seconds: 35}),
+        None,
+    )]
+    #[case(
+        NaiveDate::from_ymd(2015, 6, 30).and_hms_milli(23, 59, 59, 1_000),
+        Some(DiffTaiUtc{datetime: NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 0), diff_seconds: 35}),
+        None,
+    )]
+    #[case(
+        NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
+        Some(DiffTaiUtc{datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0), diff_seconds: 36}),
+        None,
+    )]
+    fn test_pick_dominant_row<'a>(
+        #[case] dt_input: NaiveDateTime,
+        #[case] expected_ok: Option<DiffTaiUtc>,
+        #[case] expected_err: Option<Error>,
+    ) {
+        let expected = expected_ok.as_ref().ok_or_else(|| expected_err.unwrap());
+
+        let tai_utc_table = TaiUtcTable::from_lines(
+            vec!["20120701000000 35", "20150701000000 36"],
+            "%Y%m%d%H%M%S",
+        )
+        .unwrap();
+
+        let dominant_row = tai_utc_table.pick_dominant_row(&dt_input);
+
+        assert_eq!(dominant_row, expected);
+    }
 }
