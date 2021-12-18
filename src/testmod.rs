@@ -33,5 +33,16 @@ pub fn tmp_text_file<P: AsRef<Path>>(dir: &P, name: &str, lines: &[&str]) -> io:
 
 /// (Option<T>, Option<E>) -> Result<T, E>
 pub fn result<T, E>(value: Option<T>, err: Option<E>) -> Result<T, E> {
-    value.ok_or_else(|| err.unwrap())
+    match value {
+        Some(v) => match err {
+            Some(_) => {
+                panic!("Result<T, E> cannot have both a T value and an E error concurrently.")
+            }
+            None => Ok(v),
+        },
+        None => match err {
+            Some(e) => Err(e),
+            None => panic!("Result<T, E> must have one of T value or E error."),
+        },
+    }
 }
