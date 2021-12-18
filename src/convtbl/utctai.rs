@@ -107,8 +107,49 @@ impl std::ops::Deref for UtcTaiTable {
 mod tests {
     use super::*;
     use crate::convtbl::TaiUtcTable;
-    use chrono::NaiveDateTime;
+    use chrono::{NaiveDate, NaiveDateTime};
+    use rstest::*;
     use std::str::FromStr;
+
+    #[rstest]
+    #[case(
+        NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 34),
+        None,
+        Some(Error::DatetimeTooLowError("2012-07-01 00:00:34".to_string())),
+    )]
+    #[case(
+        NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 35),
+        Some(DiffUtcTai{datetime: NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 35), diff_seconds: -35, corr_seconds: 0}),
+        None,
+    )]
+    #[case(
+        NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 35),
+        Some(DiffUtcTai{datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 35), diff_seconds: -36, corr_seconds: 1}),
+        None,
+    )]
+    #[case(
+        NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 36),
+        Some(DiffUtcTai{datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 36), diff_seconds: -36, corr_seconds: 0}),
+        None,
+    )]
+    fn test_pick_dominant_row<'a>(
+        #[case] dt_input: NaiveDateTime,
+        #[case] expected_ok: Option<DiffUtcTai>,
+        #[case] expected_err: Option<Error>,
+    ) {
+        let expected = expected_ok.as_ref().ok_or_else(|| expected_err.unwrap());
+
+        let tai_utc_table = TaiUtcTable::from_lines(
+            vec!["20120701000000 35", "20150701000000 36"],
+            "%Y%m%d%H%M%S",
+        )
+        .unwrap();
+        let utc_tai_table = UtcTaiTable::from(&tai_utc_table);
+
+        let dominant_row = utc_tai_table.pick_dominant_row(&dt_input);
+
+        assert_eq!(dominant_row, expected);
+    }
 
     /// Tests construction of UtcTaiTable from TaiUtcTable.
     #[test]
