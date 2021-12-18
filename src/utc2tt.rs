@@ -91,6 +91,7 @@ pub fn utc2tt_dt(
 mod tests {
     use super::*;
     use crate::convtbl::DiffTaiUtc;
+    use crate::testmod;
     use chrono::NaiveDate;
     use rstest::*;
 
@@ -127,9 +128,7 @@ mod tests {
         #[case] expected_ok: Option<&str>,
         #[case] expected_err: Option<Error>,
     ) {
-        let expected = expected_ok
-            .map(ToString::to_string)
-            .ok_or_else(|| expected_err.unwrap());
+        let expected = testmod::result(expected_ok.map(ToString::to_string), expected_err);
 
         let tai_utc_table = vec![
             DiffTaiUtc {

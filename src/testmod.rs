@@ -30,3 +30,8 @@ pub fn tmp_text_file<P: AsRef<Path>>(dir: &P, name: &str, lines: &[&str]) -> io:
 
     return Ok(file_path);
 }
+
+/// (Option<T>, Option<E>) -> Result<T, E>
+pub fn result<T, E>(value: Option<T>, err: Option<E>) -> Result<T, E> {
+    value.ok_or_else(|| err.unwrap())
+}

@@ -107,6 +107,7 @@ impl std::ops::Deref for UtcTaiTable {
 mod tests {
     use super::*;
     use crate::convtbl::TaiUtcTable;
+    use crate::testmod;
     use chrono::{NaiveDate, NaiveDateTime};
     use rstest::*;
     use std::str::FromStr;
@@ -142,7 +143,7 @@ mod tests {
         #[case] expected_ok: Option<DiffUtcTai>,
         #[case] expected_err: Option<Error>,
     ) {
-        let expected = expected_ok.as_ref().ok_or_else(|| expected_err.unwrap());
+        let expected = testmod::result(expected_ok.as_ref(), expected_err);
 
         let tai_utc_table = TaiUtcTable::from_lines(
             vec!["20120701000000 35", "20150701000000 36"],
