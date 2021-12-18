@@ -152,53 +152,44 @@ mod tests {
         "2017-01-02T11:22:33 15",
         " ",
         "%Y-%m-%dT%H:%M:%S",
-        NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33),
-        15
+        Some(DiffTaiUtc{datetime:NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33), diff_seconds: 15}),
+        None
     )]
     #[case(
         "20170102112233,15",
         ",",
         "%Y%m%d%H%M%S",
-        NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33),
-        15
+        Some(DiffTaiUtc{datetime:NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33), diff_seconds: 15}),
+        None,
+    )]
+    #[case(
+        "2017-01-02T11:22:33 15 1", // Too many values lead the error
+        " ",
+        "%Y-%m-%dT%H:%M:%S",
+        None,
+        Some(Error::TaiUtcTableParseError(line.to_string())),
+    )]
+    #[case(
+        "2017-01-0211:22:33 15", // Illegal datetime format leads the error
+        " ",
+        "%Y-%m-%dT%H:%M:%S",
+        None,
+        Some(Error::TaiUtcTableDatetimeParseError(
+            "2017-01-0211:22:33".to_string()
+        )),
     )]
     fn test_diff_tai_utc_from_line(
         #[case] line: &str,
         #[case] sep: &str,
         #[case] fmt: &str,
-        #[case] expected_dt: NaiveDateTime,
-        #[case] expected_diff: i64,
+        #[case] expected_ok: Option<DiffTaiUtc>,
+        #[case] expected_err: Option<Error>,
     ) {
+        let expected = expected_ok.ok_or_else(|| expected_err.unwrap());
+
         let result = DiffTaiUtc::from_line(line, sep, fmt);
 
-        assert_eq!(
-            result,
-            Ok(DiffTaiUtc {
-                datetime: expected_dt,
-                diff_seconds: expected_diff
-            })
-        );
-    }
-
-    #[test]
-    fn test_diff_tai_utc_from_illegal_line() {
-        let line = "2017-01-02T11:22:33 15 1";
-        let result = DiffTaiUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
-
-        assert_eq!(result, Err(Error::TaiUtcTableParseError(line.to_string())))
-    }
-
-    #[test]
-    fn test_diff_tai_utc_from_illegal_datetime() {
-        let line = "2017-01-0211:22:33 15";
-        let result = DiffTaiUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
-
-        assert_eq!(
-            result,
-            Err(Error::TaiUtcTableDatetimeParseError(
-                "2017-01-0211:22:33".to_string()
-            ))
-        )
+        assert_eq!(result, expected);
     }
 
     #[rstest]
