@@ -109,6 +109,7 @@ mod tests {
     #[rstest]
     // Error when the input datetime is too low.
     #[case("2015-07-01T00:01:08.183", None, Some(Error::DatetimeTooLowError("2015-07-01 00:01:08.183".to_string())))]
+    #[case("2015-07-01T00:01:08.184", Some("2015-07-01T00:00:00.000"), None)]
     // regular cases
     #[case("2017-01-02T11:23:42.184", Some("2017-01-02T11:22:33.000"), None)]
     #[case("2017-01-02T11:23:42.307", Some("2017-01-02T11:22:33.123"), None)]
