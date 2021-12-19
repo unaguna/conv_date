@@ -91,32 +91,45 @@ pub fn utc2tt_dt(
 mod tests {
     use super::*;
     use crate::convtbl::DiffTaiUtc;
+    use crate::testmod;
     use chrono::NaiveDate;
     use rstest::*;
 
     const DT_FMT: &str = "%Y-%m-%dT%H:%M:%S%.3f";
 
     #[rstest]
-    #[case("2017-01-02T11:22:33.000", "2017-01-02T11:23:42.184")]
-    #[case("2017-01-02T11:22:33.123", "2017-01-02T11:23:42.307")]
+    // Error when the input datetime is too low.
+    #[case("2015-06-30T23:59:60.999", None, Some(Error::DatetimeTooLowError("2015-06-30 23:59:60.999".to_string())))]
+    #[case("2015-07-01T00:00:00.000", Some("2015-07-01T00:01:08.184"), None)]
+    // regular cases
+    #[case("2017-01-02T11:22:33.000", Some("2017-01-02T11:23:42.184"), None)]
+    #[case("2017-01-02T11:22:33.123", Some("2017-01-02T11:23:42.307"), None)]
     // うるう秒が挿入される瞬間のテスト
-    #[case("2016-12-31T23:59:59.000", "2017-01-01T00:01:07.184")]
-    #[case("2016-12-31T23:59:60.000", "2017-01-01T00:01:08.184")]
-    #[case("2016-12-31T23:59:60.123", "2017-01-01T00:01:08.307")]
-    #[case("2017-01-01T00:00:00.000", "2017-01-01T00:01:09.184")]
+    #[case("2016-12-31T23:59:59.000", Some("2017-01-01T00:01:07.184"), None)]
+    #[case("2016-12-31T23:59:60.000", Some("2017-01-01T00:01:08.184"), None)]
+    #[case("2016-12-31T23:59:60.123", Some("2017-01-01T00:01:08.307"), None)]
+    #[case("2017-01-01T00:00:00.000", Some("2017-01-01T00:01:09.184"), None)]
     // うるう秒が削除される瞬間のテスト
-    #[case("2017-12-31T23:59:58.000", "2018-01-01T00:01:07.184")]
-    #[case("2017-12-31T23:59:58.123", "2018-01-01T00:01:07.307")]
-    #[case("2018-01-01T00:00:00.000", "2018-01-01T00:01:08.184")]
+    #[case("2017-12-31T23:59:58.000", Some("2018-01-01T00:01:07.184"), None)]
+    #[case("2017-12-31T23:59:58.123", Some("2018-01-01T00:01:07.307"), None)]
+    #[case("2018-01-01T00:00:00.000", Some("2018-01-01T00:01:08.184"), None)]
     // うるう秒が2秒挿入される瞬間のテスト
-    #[case("2018-12-31T23:59:59.000", "2019-01-01T00:01:07.184")]
-    #[case("2018-12-31T23:59:60.000", "2019-01-01T00:01:08.184")]
-    // #[case("2018-12-31T23:59:61.000", "2019-01-01T00:01:09.184")]
-    #[case("2019-01-01T00:00:00.000", "2019-01-01T00:01:10.184")]
+    #[case("2018-12-31T23:59:59.000", Some("2019-01-01T00:01:07.184"), None)]
+    #[case("2018-12-31T23:59:60.000", Some("2019-01-01T00:01:08.184"), None)]
+    // #[case("2018-12-31T23:59:61.000", Some("2019-01-01T00:01:09.184"), None)]
+    #[case("2019-01-01T00:00:00.000", Some("2019-01-01T00:01:10.184"), None)]
     // うるう秒が2秒削除される瞬間のテスト
-    #[case("2019-12-31T23:59:57.000", "2020-01-01T00:01:07.184")]
-    #[case("2020-01-01T00:00:00.000", "2020-01-01T00:01:08.184")]
-    fn test_utc2tai(#[case] utc: &str, #[case] expected_tt: &str) {
+    #[case("2019-12-31T23:59:57.000", Some("2020-01-01T00:01:07.184"), None)]
+    #[case("2020-01-01T00:00:00.000", Some("2020-01-01T00:01:08.184"), None)]
+    // Error when the input datetime is illegal format.
+    #[case("2019-12-31 23:59:57.000", None, Some(Error::DatetimeParseError(utc.to_string())))]
+    fn test_utc2tai(
+        #[case] utc: &str,
+        #[case] expected_ok: Option<&str>,
+        #[case] expected_err: Option<Error>,
+    ) {
+        let expected = testmod::result(expected_ok.map(ToString::to_string), expected_err);
+
         let tai_utc_table = vec![
             DiffTaiUtc {
                 datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
@@ -141,41 +154,62 @@ mod tests {
         ];
         let tai = utc2tt(&utc, &tai_utc_table.into(), DT_FMT);
 
-        assert_eq!(tai, Ok(expected_tt.to_string()));
+        assert_eq!(tai, expected);
     }
 
-    #[test]
-    fn test_error_on_illegal_format() {
-        let utc = "2019-12-31 23:59:57.000";
+    #[rstest]
+    #[case(
+        "2017-01-02T11:22:33.000",
+        "%Y-%m-%dT%H:%M:%S%.3f",
+        Some("2017-01-02T11:23:42.184"),
+        None
+    )]
+    #[case(
+        "2017-01-02T11:22:33.123",
+        "%Y-%m-%dT%H:%M:%S%.3f",
+        Some("2017-01-02T11:23:42.307"),
+        None
+    )]
+    #[case(
+        "2017-01-02T11:22:33",
+        "%Y-%m-%dT%H:%M:%S%.3f",
+        Some("2017-01-02T11:23:42.184"),
+        None
+    )]
+    #[case(
+        "2017-01-02T11:22:33",
+        "%Y-%m-%dT%H:%M:%S",
+        Some("2017-01-02T11:23:42"),
+        None
+    )]
+    #[case(
+        "2017-01-02 11:22:33",
+        "%Y-%m-%d %H:%M:%S",
+        Some("2017-01-02 11:23:42"),
+        None
+    )]
+    #[case(
+        "2017-01-02T11:22:33",
+        "%Y-%m-%d %H:%M:%S",
+        None,
+        Some(Error::DatetimeParseError(utc.to_string()))
+    )]
+    fn test_utc2tai_arg_dt_fmt(
+        #[case] utc: &str,
+        #[case] dt_fmt: &str,
+        #[case] expected_ok: Option<&str>,
+        #[case] expected_err: Option<Error>,
+    ) {
+        let expected = expected_ok
+            .map(ToString::to_string)
+            .ok_or_else(|| expected_err.unwrap());
+
         let tai_utc_table = vec![DiffTaiUtc {
-            datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
-            diff_seconds: 36,
+            datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
+            diff_seconds: 37,
         }];
-        let error = utc2tt(&utc, &tai_utc_table.into(), DT_FMT);
+        let tai = utc2tt(&utc, &tai_utc_table.into(), dt_fmt);
 
-        assert_eq!(error, Err(Error::DatetimeParseError(utc.to_string())))
-    }
-
-    #[test]
-    fn test_error_on_too_low_datetime() {
-        let utc = "2015-06-30T23:59:60.999";
-        let tai_utc_table = vec![
-            DiffTaiUtc {
-                datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
-                diff_seconds: 36,
-            },
-            DiffTaiUtc {
-                datetime: NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0),
-                diff_seconds: 37,
-            },
-        ];
-        let error = utc2tt(&utc, &tai_utc_table.into(), DT_FMT);
-
-        assert_eq!(
-            error,
-            Err(Error::DatetimeTooLowError(
-                "2015-06-30 23:59:60.999".to_string()
-            ))
-        )
+        assert_eq!(tai, expected);
     }
 }

@@ -5,7 +5,6 @@ use chrono::{Duration, NaiveDateTime};
 /// Difference (UTC - TAI) and the datetime at which it is applied
 ///
 /// It expresses a row of the UTC-TAI table.
-// TODO: write tests
 #[derive(Debug, PartialEq)]
 pub struct DiffUtcTai {
     /// (TAI) The moment when the difference (UTC - TAI) changes due to a leap second
@@ -101,5 +100,103 @@ impl std::ops::Deref for UtcTaiTable {
     type Target = [DiffUtcTai];
     fn deref(&self) -> &[DiffUtcTai] {
         self.diff_list.deref()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::convtbl::TaiUtcTable;
+    use crate::testmod;
+    use chrono::{NaiveDate, NaiveDateTime};
+    use rstest::*;
+    use std::str::FromStr;
+
+    #[rstest]
+    #[case(
+        NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 34),
+        None,
+        Some(Error::DatetimeTooLowError("2012-07-01 00:00:34".to_string())),
+    )]
+    #[case(
+        NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 35),
+        Some(DiffUtcTai{datetime: NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 35), diff_seconds: -35, corr_seconds: 0}),
+        None,
+    )]
+    #[case(
+        NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 34),
+        Some(DiffUtcTai{datetime: NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 35), diff_seconds: -35, corr_seconds: 0}),
+        None,
+    )]
+    #[case(
+        NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 35),
+        Some(DiffUtcTai{datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 35), diff_seconds: -36, corr_seconds: 1}),
+        None,
+    )]
+    #[case(
+        NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 36),
+        Some(DiffUtcTai{datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 36), diff_seconds: -36, corr_seconds: 0}),
+        None,
+    )]
+    fn test_pick_dominant_row<'a>(
+        #[case] dt_input: NaiveDateTime,
+        #[case] expected_ok: Option<DiffUtcTai>,
+        #[case] expected_err: Option<Error>,
+    ) {
+        let expected = testmod::result(expected_ok.as_ref(), expected_err);
+
+        let tai_utc_table = TaiUtcTable::from_lines(
+            vec!["20120701000000 35", "20150701000000 36"],
+            "%Y%m%d%H%M%S",
+        )
+        .unwrap();
+        let utc_tai_table = UtcTaiTable::from(&tai_utc_table);
+
+        let dominant_row = utc_tai_table.pick_dominant_row(&dt_input);
+
+        assert_eq!(dominant_row, expected);
+    }
+
+    /// Tests construction of UtcTaiTable from TaiUtcTable.
+    #[test]
+    fn test_from_tai_utc_table() {
+        let tai_utc_table = TaiUtcTable::from_lines(
+            vec![
+                "20120701000000 35",
+                "20150701000000 36",
+                "20170101000000 35",
+            ],
+            "%Y%m%d%H%M%S",
+        )
+        .unwrap();
+
+        let utc_tai_table = UtcTaiTable::from(&tai_utc_table);
+
+        let diff_utc_tai_list: Vec<&DiffUtcTai> = utc_tai_table.iter().collect();
+        assert_eq!(diff_utc_tai_list.len(), 4);
+        assert_eq!(
+            diff_utc_tai_list[0].datetime,
+            NaiveDateTime::from_str("2012-07-01T00:00:35").unwrap()
+        );
+        assert_eq!(diff_utc_tai_list[0].diff_seconds, -35);
+        assert_eq!(diff_utc_tai_list[0].corr_seconds, 0);
+        assert_eq!(
+            diff_utc_tai_list[1].datetime,
+            NaiveDateTime::from_str("2015-07-01T00:00:35").unwrap()
+        );
+        assert_eq!(diff_utc_tai_list[1].diff_seconds, -36);
+        assert_eq!(diff_utc_tai_list[1].corr_seconds, 1);
+        assert_eq!(
+            diff_utc_tai_list[2].datetime,
+            NaiveDateTime::from_str("2015-07-01T00:00:36").unwrap()
+        );
+        assert_eq!(diff_utc_tai_list[2].diff_seconds, -36);
+        assert_eq!(diff_utc_tai_list[2].corr_seconds, 0);
+        assert_eq!(
+            diff_utc_tai_list[3].datetime,
+            NaiveDateTime::from_str("2017-01-01T00:00:35").unwrap()
+        );
+        assert_eq!(diff_utc_tai_list[3].diff_seconds, -35);
+        assert_eq!(diff_utc_tai_list[3].corr_seconds, 0);
     }
 }

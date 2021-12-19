@@ -12,9 +12,6 @@ pub mod tt2utc;
 pub mod utc2tai;
 pub mod utc2tt;
 
-#[cfg(test)]
-mod testmod;
-
 const TAI_UTC_TABLE_FILENAME: &str = "tai-utc.txt";
 const TAI_UTC_TABLE: &str = include_str!("tai-utc.txt");
 pub const EXIT_CODE_OK: i32 = 0;
