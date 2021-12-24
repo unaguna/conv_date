@@ -107,8 +107,7 @@ impl Arguments<'_> {
             .arg(
                 Arg::with_name("datetime")
                     .help("datetime to convert")
-                    .multiple(true)
-                    .required(true),
+                    .multiple(true),
             );
         let matches: ArgMatches<'a> = app.get_matches_from(args);
         Arguments::<'a> {
@@ -140,9 +139,9 @@ impl Arguments<'_> {
         self.io_pair_flg
     }
 
-    pub fn get_datetimes(&self) -> Values {
+    pub fn get_datetimes(&self) -> Option<Values> {
         // It can unwrap because "datetime" is required.
-        return self.matches.values_of("datetime").unwrap();
+        return self.matches.values_of("datetime");
     }
 }
 

@@ -33,7 +33,7 @@ pub fn main_inner(
 
     // calc TT
     let mut someone_is_err = false;
-    for in_utc in args.get_datetimes() {
+    for in_utc in args.get_datetimes().unwrap() {
         let tt = utc2tt(in_utc, &tai_utc_table, params.get_dt_fmt());
 
         match tt {

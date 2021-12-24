@@ -33,7 +33,7 @@ pub fn main_inner(
 
     // calc TAI
     let mut someone_is_err = false;
-    for in_utc in args.get_datetimes() {
+    for in_utc in args.get_datetimes().unwrap() {
         let tai = utc2tai(in_utc, &tai_utc_table, params.get_dt_fmt());
 
         match tai {
