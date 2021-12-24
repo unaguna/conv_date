@@ -28,6 +28,7 @@ fn main() {
     let exit_code = main_inner(
         env::args(),
         env::vars(),
+        &mut io::stdin().lock(),
         &mut io::stdout(),
         &mut io::stderr(),
     );
