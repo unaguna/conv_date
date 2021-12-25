@@ -44,8 +44,13 @@ pub fn main_inner(
         let in_tai = match in_tai {
             Ok(in_tai) => in_tai,
             Err(e) => {
+                someone_is_err = true;
                 exe::print_err(stderr, &e);
-                continue;
+
+                // This error occurs when the input stream is invalid.
+                // In other words, subsequent inputs are also likely to be abnormal,
+                // so the process is terminated without `continue`.
+                break;
             }
         };
 
