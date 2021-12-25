@@ -1,11 +1,12 @@
 use super::{Arguments, EnvValues, Parameters};
 use crate::{exe, tt2utc};
 use std::ffi::OsString;
-use std::io::Write;
+use std::io::{BufRead, Write};
 
 pub fn main_inner(
     args: impl IntoIterator<Item = impl Into<OsString> + Clone>,
     env_vars: impl IntoIterator<Item = (impl ToString, impl ToString)>,
+    stdin: &mut impl BufRead,
     stdout: &mut impl Write,
     stderr: &mut impl Write,
 ) -> i32 {
@@ -31,17 +32,36 @@ pub fn main_inner(
     // function for output to stdout
     let print_line = exe::get_print_line(&params);
 
+    // Chooses input datetimes stream
+    let dt_stream: Box<dyn Iterator<Item = Result<String, _>>> = match args.get_datetimes() {
+        Some(datetimes) => Box::new(datetimes.map(|s| Ok(s.to_string()))),
+        None => Box::new(stdin.lines()),
+    };
+
     // calc UTC
     let mut someone_is_err = false;
-    for in_tt in args.get_datetimes().unwrap() {
-        let utc = tt2utc(in_tt, &utc_tai_table, params.get_dt_fmt());
+    for in_tt in dt_stream {
+        let in_tt = match in_tt {
+            Ok(in_tt) => in_tt,
+            Err(e) => {
+                someone_is_err = true;
+                exe::print_err(stderr, &e);
+
+                // This error occurs when the input stream is invalid.
+                // In other words, subsequent inputs are also likely to be abnormal,
+                // so the process is terminated without `continue`.
+                break;
+            }
+        };
+
+        let utc = tt2utc(&in_tt, &utc_tai_table, params.get_dt_fmt());
 
         match utc {
             Err(e) => {
                 someone_is_err = true;
                 exe::print_err(stderr, &e)
             }
-            Ok(utc) => print_line(stdout, in_tt, &utc),
+            Ok(utc) => print_line(stdout, &in_tt, &utc),
         }
     }
 
@@ -77,11 +97,18 @@ mod tests {
             "2017-01-01T00:01:11.184",
         ];
         let env_vars = HashMap::<String, String>::from([]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -128,11 +155,18 @@ mod tests {
             "2017-01-01T00:00:41.184",
         ];
         let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 2);
         assert_eq!(
@@ -187,11 +221,18 @@ mod tests {
             "2017-01-01T00:00:41.184",
         ];
         let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 1);
         assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
@@ -233,11 +274,18 @@ mod tests {
             "2017-01-01T00:00:41.184",
         ];
         let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 1);
         assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
@@ -270,11 +318,18 @@ mod tests {
             "2017-01-01T00:00:41.184",
         ];
         let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path)]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 1);
         assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
@@ -318,11 +373,18 @@ mod tests {
             tai_utc_table_path.to_str().unwrap(),
         ];
         let env_vars: HashMap<&str, &str> = HashMap::from([]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -362,11 +424,18 @@ mod tests {
             tai_utc_table_path,
         ];
         let env_vars: HashMap<&str, &str> = HashMap::from([]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 1);
         assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
@@ -408,11 +477,18 @@ mod tests {
             "2017-01-01T00:00:41.184",
         ];
         let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -464,11 +540,18 @@ mod tests {
         ];
         let env_vars =
             HashMap::from([("TAI_UTC_TABLE", dummy_tai_utc_table_path.to_str().unwrap())]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -517,11 +600,18 @@ mod tests {
             "%Y%m%d%H%M%S",
         ];
         let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -571,11 +661,18 @@ mod tests {
             ("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap()),
             ("DT_FMT", "%Y%m%d%H%M%S"),
         ]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -627,11 +724,18 @@ mod tests {
             ("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap()),
             ("DT_FMT", "%Y%m%d%H%M%S"),
         ]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -680,11 +784,18 @@ mod tests {
             "%Y%m%d%H%M%S%3f",
         ];
         let env_vars = HashMap::from([("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap())]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -734,11 +845,18 @@ mod tests {
             ("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap()),
             ("TAI_UTC_TABLE_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -790,11 +908,18 @@ mod tests {
             ("TAI_UTC_TABLE", tai_utc_table_path.to_str().unwrap()),
             ("TAI_UTC_TABLE_DT_FMT", "%Y%m%d%H%M%S%3f"),
         ]);
+        let stdin_buf = b"";
         let mut stdout_buf = Vec::<u8>::new();
         let mut stderr_buf = Vec::<u8>::new();
 
         // Run the target.
-        let exec_code = main_inner(args, env_vars, &mut stdout_buf, &mut stderr_buf);
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
 
         assert_eq!(exec_code, 0);
         assert_eq!(
@@ -811,5 +936,89 @@ mod tests {
             2017-01-01T00:00:01.816\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
+    }
+
+    /// Test regular case.
+    #[test]
+    fn test_stdin() {
+        let args = vec![EXE_NAME];
+        let env_vars = HashMap::<String, String>::from([]);
+        let stdin_buf = b"2015-07-01T00:01:06.184\n2015-07-01T00:01:07.185";
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
+
+        assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-06-30T23:59:59.000\n\
+            2015-06-30T23:59:60.001\n"
+        );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
+    }
+
+    /// Test that the stdin is ignored if datetimes are specified in the arguments
+    #[test]
+    fn test_stdin_is_ignored_when_args_are_specified() {
+        let args = vec![EXE_NAME, "2017-01-01T00:01:10", "2017-01-01T00:01:11"];
+        let env_vars = HashMap::<String, String>::from([]);
+        let stdin_buf = b"2015-07-01T00:01:06.184\n2015-07-01T00:01:07.185";
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
+
+        assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2017-01-01T00:00:00.816\n\
+            2017-01-01T00:00:01.816\n"
+        );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
+    }
+
+    /// Test error when stdin is illegal.
+    #[test]
+    fn test_illegal_stdin() {
+        let args = vec![EXE_NAME];
+        let env_vars = HashMap::<String, String>::from([]);
+        let stdin_buf = vec![0x82, 0xA0, 0x82, 0xA0, 0x82, 0xA0];
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
+
+        assert_eq!(exec_code, 2);
+        assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
+        assert_eq!(
+            String::from_utf8_lossy(&stderr_buf),
+            format!(
+                "{}: {}\n",
+                exe::exe_name(),
+                "stream did not contain valid UTF-8"
+            )
+        );
     }
 }
