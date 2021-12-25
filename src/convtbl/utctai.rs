@@ -41,9 +41,8 @@ pub struct DiffUtcTai {
 /// }
 /// ```
 ///
-pub struct UtcTaiTable {
-    diff_list: Vec<DiffUtcTai>,
-}
+#[derive(Debug)]
+pub struct UtcTaiTable(Vec<DiffUtcTai>);
 
 impl UtcTaiTable {
     /// Pick the row to use to calculate UTC from the TAI datetime.
@@ -92,14 +91,14 @@ impl From<&TaiUtcTable> for UtcTaiTable {
             });
             prev_diff = diff_tai_utc.diff_seconds;
         }
-        return UtcTaiTable { diff_list };
+        return UtcTaiTable(diff_list);
     }
 }
 
 impl std::ops::Deref for UtcTaiTable {
     type Target = [DiffUtcTai];
     fn deref(&self) -> &[DiffUtcTai] {
-        self.diff_list.deref()
+        self.0.deref()
     }
 }
 

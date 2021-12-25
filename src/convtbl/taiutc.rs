@@ -77,9 +77,8 @@ impl DiffTaiUtc {
 ///     assert_eq!(row.diff_seconds, 37);
 /// }
 /// ```
-pub struct TaiUtcTable {
-    diff_list: Vec<DiffTaiUtc>,
-}
+#[derive(Debug)]
+pub struct TaiUtcTable(Vec<DiffTaiUtc>);
 
 impl TaiUtcTable {
     /// Construct `TaiUtcTable` from lines of the TAI-UTC table file.
@@ -101,7 +100,7 @@ impl TaiUtcTable {
             .into_iter()
             .map(|line| DiffTaiUtc::from_line(line.as_ref(), " ", fmt))
             .collect::<Result<Vec<_>, _>>()?;
-        Ok(TaiUtcTable { diff_list })
+        Ok(TaiUtcTable(diff_list))
     }
 
     /// Pick the row to use to calculate TAI from the UTC datetime.
@@ -130,14 +129,14 @@ impl TaiUtcTable {
 
 impl From<Vec<DiffTaiUtc>> for TaiUtcTable {
     fn from(diff_list: Vec<DiffTaiUtc>) -> Self {
-        TaiUtcTable { diff_list }
+        TaiUtcTable(diff_list)
     }
 }
 
 impl std::ops::Deref for TaiUtcTable {
     type Target = [DiffTaiUtc];
     fn deref(&self) -> &[DiffTaiUtc] {
-        self.diff_list.deref()
+        self.0.deref()
     }
 }
 
