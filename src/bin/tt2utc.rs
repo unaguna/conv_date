@@ -21,6 +21,9 @@
 //!
 //! # Environment variables
 //! See [utc2tt#Environment variables](../utc2tt/index.html#environment-variables).
+//!
+//! # Standard input
+//! See [utc2tt#Standard input](../utc2tt/index.html#standard-input).
 
 extern crate convdate;
 use convdate::exe::tt2utc::main_inner;

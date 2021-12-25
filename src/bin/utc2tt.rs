@@ -22,6 +22,9 @@
 //! 2017-01-01T00:01:09.184
 //! ```
 //!
+//! Instead of specifying the datetimes as arguments,
+//! they can be specified from the standard input.
+//!
 //! # Options
 //! - `--dt-fmt <dt_fmt>`
 //!
@@ -83,6 +86,10 @@
 //!
 //!     Look for a description for an option `--tai-utc-table-dt-fmt`.
 //!
+//! # Standard input
+//!
+//! If the datetimes are not specified as arguments,
+//! they can be entered from the standard input instead.
 
 extern crate convdate;
 use convdate::exe::utc2tt::main_inner;
