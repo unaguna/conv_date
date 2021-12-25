@@ -66,6 +66,7 @@ pub fn get_print_line(params: &Parameters) -> fn(&mut dyn Write, &str, &str) -> 
 }
 
 /// Command arguments of convdate
+#[derive(Debug)]
 pub struct Arguments<'a> {
     matches: ArgMatches<'a>,
     tai_utc_table_dt_fmt: Option<String>,
@@ -146,6 +147,7 @@ impl Arguments<'_> {
 }
 
 /// Environment variables which convdate uses
+#[derive(Debug)]
 pub struct EnvValues {
     dt_fmt: Option<String>,
     tai_utc_table_dt_fmt: Option<String>,
@@ -178,6 +180,7 @@ impl EnvValues {
     }
 }
 
+#[derive(Debug)]
 pub struct Parameters<'a> {
     dt_fmt: &'a str,
     tai_utc_table_dt_fmt: &'a str,

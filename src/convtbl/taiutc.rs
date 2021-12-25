@@ -1,5 +1,6 @@
 use crate::error::Error;
 use chrono::NaiveDateTime;
+use std::fmt;
 
 /// Difference (TAI - UTC) and the datetime at which it is applied
 ///
@@ -7,7 +8,7 @@ use chrono::NaiveDateTime;
 ///
 /// # See also
 /// - [`TaiUtcTable`] - It express the TAI-UTC table.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct DiffTaiUtc {
     /// (UTC) The moment when the difference (TAI - UTC) changes due to a leap second
     pub datetime: NaiveDateTime,
@@ -56,6 +57,12 @@ impl DiffTaiUtc {
             datetime,
             diff_seconds,
         })
+    }
+}
+
+impl fmt::Display for DiffTaiUtc {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.datetime, self.diff_seconds)
     }
 }
 
