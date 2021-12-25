@@ -43,13 +43,22 @@ impl fmt::Display for DiffUtcTai {
 /// ```
 /// use convdate::convtbl::{TaiUtcTable, UtcTaiTable};
 /// use chrono::NaiveDate;
+/// # use std::error::Error;
 ///
-/// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// # fn try_main() -> Result<(), Box<Error>> {
+/// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S")?;
 /// let table: UtcTaiTable = (&table).into();
 /// for row in table.iter() {
 ///     assert_eq!(row.datetime, NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 37));
 ///     assert_eq!(row.diff_seconds, -37);
 /// }
+/// #
+/// #     Ok(())
+/// # }
+/// #
+/// # fn main() {
+/// #     try_main().unwrap();
+/// # }
 /// ```
 ///
 #[derive(Debug)]
