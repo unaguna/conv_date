@@ -937,4 +937,88 @@ mod tests {
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
+
+    /// Test regular case.
+    #[test]
+    fn test_stdin() {
+        let args = vec![EXE_NAME];
+        let env_vars = HashMap::<String, String>::from([]);
+        let stdin_buf = b"2015-07-01T00:00:34.000\n2015-07-01T00:00:35.001";
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
+
+        assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2015-06-30T23:59:59.000\n\
+            2015-06-30T23:59:60.001\n"
+        );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
+    }
+
+    /// Test that the stdin is ignored if datetimes are specified in the arguments
+    #[test]
+    fn test_stdin_is_ignored_when_args_are_specified() {
+        let args = vec![EXE_NAME, "2017-01-01T00:00:38", "2017-01-01T00:00:39"];
+        let env_vars = HashMap::<String, String>::from([]);
+        let stdin_buf = b"2015-07-01T00:00:34.000\n2015-07-01T00:00:35.001";
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
+
+        assert_eq!(exec_code, 0);
+        assert_eq!(
+            String::from_utf8_lossy(&stdout_buf),
+            "2017-01-01T00:00:01.000\n\
+            2017-01-01T00:00:02.000\n"
+        );
+        assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
+    }
+
+    /// Test error when stdin is illegal.
+    #[test]
+    fn test_illegal_stdin() {
+        let args = vec![EXE_NAME];
+        let env_vars = HashMap::<String, String>::from([]);
+        let stdin_buf = vec![0x82, 0xA0, 0x82, 0xA0, 0x82, 0xA0];
+        let mut stdout_buf = Vec::<u8>::new();
+        let mut stderr_buf = Vec::<u8>::new();
+
+        // Run the target.
+        let exec_code = main_inner(
+            args,
+            env_vars,
+            &mut &stdin_buf[..],
+            &mut stdout_buf,
+            &mut stderr_buf,
+        );
+
+        assert_eq!(exec_code, 2);
+        assert_eq!(String::from_utf8_lossy(&stdout_buf), "");
+        assert_eq!(
+            String::from_utf8_lossy(&stderr_buf),
+            format!(
+                "{}: {}\n",
+                exe::exe_name(),
+                "stream did not contain valid UTF-8"
+            )
+        );
+    }
 }
