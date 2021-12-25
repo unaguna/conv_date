@@ -106,7 +106,7 @@ impl Arguments<'_> {
             )
             .arg(
                 Arg::with_name("datetime")
-                    .help("datetime to convert")
+                    .help("datetime to convert. Instead of specifying it here, you can also enter it from the standard input.")
                     .multiple(true),
             );
         let matches: ArgMatches<'a> = app.get_matches_from(args);
