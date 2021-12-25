@@ -27,7 +27,8 @@
 
 extern crate convdate;
 use convdate::exe::tt2utc::main_inner;
-use std::{env, io};
+use std::env;
+use std::io::{self, BufWriter};
 
 #[doc(hidden)]
 fn main() {
@@ -35,7 +36,7 @@ fn main() {
         env::args(),
         env::vars(),
         &mut io::stdin().lock(),
-        &mut io::stdout(),
+        &mut BufWriter::new(io::stdout().lock()),
         &mut io::stderr(),
     );
     std::process::exit(exit_code);

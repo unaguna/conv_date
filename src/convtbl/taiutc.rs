@@ -1,5 +1,6 @@
 use crate::error::Error;
 use chrono::NaiveDateTime;
+use std::fmt;
 
 /// Difference (TAI - UTC) and the datetime at which it is applied
 ///
@@ -7,7 +8,7 @@ use chrono::NaiveDateTime;
 ///
 /// # See also
 /// - [`TaiUtcTable`] - It express the TAI-UTC table.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct DiffTaiUtc {
     /// (UTC) The moment when the difference (TAI - UTC) changes due to a leap second
     pub datetime: NaiveDateTime,
@@ -59,6 +60,12 @@ impl DiffTaiUtc {
     }
 }
 
+impl fmt::Display for DiffTaiUtc {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.datetime, self.diff_seconds)
+    }
+}
+
 /// TAI-UTC conversion table
 ///
 /// It expresses [the TAI-UTC table](https://www.ietf.org/timezones/data/leap-seconds.list); it is used for conversion from UTC to TAI.
@@ -70,16 +77,24 @@ impl DiffTaiUtc {
 /// ```
 /// use convdate::convtbl::TaiUtcTable;
 /// use chrono::NaiveDate;
+/// # use std::error::Error;
 ///
-/// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// # fn try_main() -> Result<(), Box<Error>> {
+/// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S")?;
 /// for row in table.iter() {
 ///     assert_eq!(row.datetime, NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0));
 ///     assert_eq!(row.diff_seconds, 37);
 /// }
+/// #
+/// #     Ok(())
+/// # }
+/// #
+/// # fn main() {
+/// #     try_main().unwrap();
+/// # }
 /// ```
-pub struct TaiUtcTable {
-    diff_list: Vec<DiffTaiUtc>,
-}
+#[derive(Debug)]
+pub struct TaiUtcTable(Vec<DiffTaiUtc>);
 
 impl TaiUtcTable {
     /// Construct `TaiUtcTable` from lines of the TAI-UTC table file.
@@ -101,7 +116,7 @@ impl TaiUtcTable {
             .into_iter()
             .map(|line| DiffTaiUtc::from_line(line.as_ref(), " ", fmt))
             .collect::<Result<Vec<_>, _>>()?;
-        Ok(TaiUtcTable { diff_list })
+        Ok(TaiUtcTable(diff_list))
     }
 
     /// Pick the row to use to calculate TAI from the UTC datetime.
@@ -130,14 +145,14 @@ impl TaiUtcTable {
 
 impl From<Vec<DiffTaiUtc>> for TaiUtcTable {
     fn from(diff_list: Vec<DiffTaiUtc>) -> Self {
-        TaiUtcTable { diff_list }
+        TaiUtcTable(diff_list)
     }
 }
 
 impl std::ops::Deref for TaiUtcTable {
     type Target = [DiffTaiUtc];
     fn deref(&self) -> &[DiffTaiUtc] {
-        self.diff_list.deref()
+        self.0.deref()
     }
 }
 
