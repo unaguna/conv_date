@@ -201,8 +201,55 @@
 <span id="201">201</span>
 <span id="202">202</span>
 <span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::Error</span>;
 <span class="kw">use</span> <span class="ident">chrono::NaiveDateTime</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
 
 <span class="doccomment">/// Difference (TAI - UTC) and the datetime at which it is applied</span>
 <span class="doccomment">///</span>
@@ -210,7 +257,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # See also</span>
 <span class="doccomment">/// - [`TaiUtcTable`] - It express the TAI-UTC table.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DiffTaiUtc</span> {
     <span class="doccomment">/// (UTC) The moment when the difference (TAI - UTC) changes due to a leap second</span>
     <span class="kw">pub</span> <span class="ident">datetime</span>: <span class="ident">NaiveDateTime</span>,
@@ -262,6 +309,12 @@
     }
 }
 
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">DiffTaiUtc</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;({}, {})&quot;</span>, <span class="self">self</span>.<span class="ident">datetime</span>, <span class="self">self</span>.<span class="ident">diff_seconds</span>)
+    }
+}
+
 <span class="doccomment">/// TAI-UTC conversion table</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// It expresses [the TAI-UTC table](https://www.ietf.org/timezones/data/leap-seconds.list); it is used for conversion from UTC to TAI.</span>
@@ -273,16 +326,24 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use convdate::convtbl::TaiUtcTable;</span>
 <span class="doccomment">/// use chrono::NaiveDate;</span>
+<span class="doccomment">/// # use std::error::Error;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// let table = TaiUtcTable::from_lines(vec![&quot;2017-01-01T00:00:00 37&quot;], &quot;%Y-%m-%dT%H:%M:%S&quot;).unwrap();</span>
+<span class="doccomment">/// # fn try_main() -&gt; Result&lt;(), Box&lt;Error&gt;&gt; {</span>
+<span class="doccomment">/// let table = TaiUtcTable::from_lines(vec![&quot;2017-01-01T00:00:00 37&quot;], &quot;%Y-%m-%dT%H:%M:%S&quot;)?;</span>
 <span class="doccomment">/// for row in table.iter() {</span>
 <span class="doccomment">///     assert_eq!(row.datetime, NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0));</span>
 <span class="doccomment">///     assert_eq!(row.diff_seconds, 37);</span>
 <span class="doccomment">/// }</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// #     Ok(())</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// # fn main() {</span>
+<span class="doccomment">/// #     try_main().unwrap();</span>
+<span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TaiUtcTable</span> {
-    <span class="ident">diff_list</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DiffTaiUtc</span><span class="op">&gt;</span>,
-}
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TaiUtcTable</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DiffTaiUtc</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">TaiUtcTable</span> {
     <span class="doccomment">/// Construct `TaiUtcTable` from lines of the TAI-UTC table file.</span>
@@ -304,7 +365,7 @@
             .<span class="ident">into_iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="ident">DiffTaiUtc::from_line</span>(<span class="ident">line</span>.<span class="ident">as_ref</span>(), <span class="string">&quot; &quot;</span>, <span class="ident">fmt</span>))
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">TaiUtcTable</span> { <span class="ident">diff_list</span> })
+        <span class="prelude-val">Ok</span>(<span class="ident">TaiUtcTable</span>(<span class="ident">diff_list</span>))
     }
 
     <span class="doccomment">/// Pick the row to use to calculate TAI from the UTC datetime.</span>
@@ -333,20 +394,21 @@
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DiffTaiUtc</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">TaiUtcTable</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">diff_list</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DiffTaiUtc</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">TaiUtcTable</span> { <span class="ident">diff_list</span> }
+        <span class="ident">TaiUtcTable</span>(<span class="ident">diff_list</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">TaiUtcTable</span> {
     <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> [<span class="ident">DiffTaiUtc</span>];
     <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">DiffTaiUtc</span>] {
-        <span class="self">self</span>.<span class="ident">diff_list</span>.<span class="ident">deref</span>()
+        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">deref</span>()
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testmod</span>;
     <span class="kw">use</span> <span class="ident">chrono</span>::{<span class="ident">NaiveDate</span>, <span class="ident">NaiveDateTime</span>};
     <span class="kw">use</span> <span class="ident">rstest</span>::<span class="kw-2">*</span>;
 
@@ -355,53 +417,83 @@
         <span class="string">&quot;2017-01-02T11:22:33 15&quot;</span>,
         <span class="string">&quot; &quot;</span>,
         <span class="string">&quot;%Y-%m-%dT%H:%M:%S&quot;</span>,
-        <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">2</span>).<span class="ident">and_hms</span>(<span class="number">11</span>, <span class="number">22</span>, <span class="number">33</span>),
-        <span class="number">15</span>
+        <span class="prelude-val">Some</span>(<span class="ident">DiffTaiUtc</span>{<span class="ident">datetime</span>:<span class="ident">NaiveDate::from_ymd</span>(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">2</span>).<span class="ident">and_hms</span>(<span class="number">11</span>, <span class="number">22</span>, <span class="number">33</span>), <span class="ident">diff_seconds</span>: <span class="number">15</span>}),
+        <span class="prelude-val">None</span>
     )]</span>
     <span class="attribute">#[<span class="ident">case</span>(
         <span class="string">&quot;20170102112233,15&quot;</span>,
         <span class="string">&quot;,&quot;</span>,
         <span class="string">&quot;%Y%m%d%H%M%S&quot;</span>,
-        <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">2</span>).<span class="ident">and_hms</span>(<span class="number">11</span>, <span class="number">22</span>, <span class="number">33</span>),
-        <span class="number">15</span>
+        <span class="prelude-val">Some</span>(<span class="ident">DiffTaiUtc</span>{<span class="ident">datetime</span>:<span class="ident">NaiveDate::from_ymd</span>(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">2</span>).<span class="ident">and_hms</span>(<span class="number">11</span>, <span class="number">22</span>, <span class="number">33</span>), <span class="ident">diff_seconds</span>: <span class="number">15</span>}),
+        <span class="prelude-val">None</span>,
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="string">&quot;2017-01-02T11:22:33 15 1&quot;</span>, <span class="comment">// Too many values lead the error</span>
+        <span class="string">&quot; &quot;</span>,
+        <span class="string">&quot;%Y-%m-%dT%H:%M:%S&quot;</span>,
+        <span class="prelude-val">None</span>,
+        <span class="prelude-val">Some</span>(<span class="ident">Error::TaiUtcTableParseError</span>(<span class="ident">line</span>.<span class="ident">to_string</span>())),
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="string">&quot;2017-01-0211:22:33 15&quot;</span>, <span class="comment">// Illegal datetime format leads the error</span>
+        <span class="string">&quot; &quot;</span>,
+        <span class="string">&quot;%Y-%m-%dT%H:%M:%S&quot;</span>,
+        <span class="prelude-val">None</span>,
+        <span class="prelude-val">Some</span>(<span class="ident">Error::TaiUtcTableDatetimeParseError</span>(
+            <span class="string">&quot;2017-01-0211:22:33&quot;</span>.<span class="ident">to_string</span>()
+        )),
     )]</span>
     <span class="kw">fn</span> <span class="ident">test_diff_tai_utc_from_line</span>(
         <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
         <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">sep</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
         <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_dt</span>: <span class="ident">NaiveDateTime</span>,
-        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_diff</span>: <span class="ident">i64</span>,
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_ok</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffTaiUtc</span><span class="op">&gt;</span>,
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_err</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>,
     ) {
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">testmod::result</span>(<span class="ident">expected_ok</span>, <span class="ident">expected_err</span>);
+
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">DiffTaiUtc::from_line</span>(<span class="ident">line</span>, <span class="ident">sep</span>, <span class="ident">fmt</span>);
 
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">result</span>,
-            <span class="prelude-val">Ok</span>(<span class="ident">DiffTaiUtc</span> {
-                <span class="ident">datetime</span>: <span class="ident">expected_dt</span>,
-                <span class="ident">diff_seconds</span>: <span class="ident">expected_diff</span>
-            })
-        );
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">expected</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_diff_tai_utc_from_illegal_line</span>() {
-        <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="string">&quot;2017-01-02T11:22:33 15 1&quot;</span>;
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">DiffTaiUtc::from_line</span>(<span class="ident">line</span>, <span class="string">&quot; &quot;</span>, <span class="string">&quot;%Y-%m-%dT%H:%M:%S&quot;</span>);
+    <span class="attribute">#[<span class="ident">rstest</span>]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2012</span>, <span class="number">6</span>, <span class="number">30</span>).<span class="ident">and_hms_milli</span>(<span class="number">23</span>, <span class="number">59</span>, <span class="number">59</span>, <span class="number">1_000</span>),
+        <span class="prelude-val">None</span>,
+        <span class="prelude-val">Some</span>(<span class="ident">Error::DatetimeTooLowError</span>(<span class="string">&quot;2012-06-30 23:59:60&quot;</span>.<span class="ident">to_string</span>())),
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2012</span>, <span class="number">7</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
+        <span class="prelude-val">Some</span>(<span class="ident">DiffTaiUtc</span>{<span class="ident">datetime</span>: <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2012</span>, <span class="number">7</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>), <span class="ident">diff_seconds</span>: <span class="number">35</span>}),
+        <span class="prelude-val">None</span>,
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2015</span>, <span class="number">6</span>, <span class="number">30</span>).<span class="ident">and_hms_milli</span>(<span class="number">23</span>, <span class="number">59</span>, <span class="number">59</span>, <span class="number">1_000</span>),
+        <span class="prelude-val">Some</span>(<span class="ident">DiffTaiUtc</span>{<span class="ident">datetime</span>: <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2012</span>, <span class="number">7</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>), <span class="ident">diff_seconds</span>: <span class="number">35</span>}),
+        <span class="prelude-val">None</span>,
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2015</span>, <span class="number">7</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
+        <span class="prelude-val">Some</span>(<span class="ident">DiffTaiUtc</span>{<span class="ident">datetime</span>: <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2015</span>, <span class="number">7</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>), <span class="ident">diff_seconds</span>: <span class="number">36</span>}),
+        <span class="prelude-val">None</span>,
+    )]</span>
+    <span class="kw">fn</span> <span class="ident">test_pick_dominant_row</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">dt_input</span>: <span class="ident">NaiveDateTime</span>,
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_ok</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffTaiUtc</span><span class="op">&gt;</span>,
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_err</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>,
+    ) {
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">testmod::result</span>(<span class="ident">expected_ok</span>.<span class="ident">as_ref</span>(), <span class="ident">expected_err</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="prelude-val">Err</span>(<span class="ident">Error::TaiUtcTableParseError</span>(<span class="ident">line</span>.<span class="ident">to_string</span>())))
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_diff_tai_utc_from_illegal_datetime</span>() {
-        <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="string">&quot;2017-01-0211:22:33 15&quot;</span>;
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">DiffTaiUtc::from_line</span>(<span class="ident">line</span>, <span class="string">&quot; &quot;</span>, <span class="string">&quot;%Y-%m-%dT%H:%M:%S&quot;</span>);
-
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">result</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">Error::TaiUtcTableDatetimeParseError</span>(
-                <span class="string">&quot;2017-01-0211:22:33&quot;</span>.<span class="ident">to_string</span>()
-            ))
+        <span class="kw">let</span> <span class="ident">tai_utc_table</span> <span class="op">=</span> <span class="ident">TaiUtcTable::from_lines</span>(
+            <span class="macro">vec!</span>[<span class="string">&quot;20120701000000 35&quot;</span>, <span class="string">&quot;20150701000000 36&quot;</span>],
+            <span class="string">&quot;%Y%m%d%H%M%S&quot;</span>,
         )
+        .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">dominant_row</span> <span class="op">=</span> <span class="ident">tai_utc_table</span>.<span class="ident">pick_dominant_row</span>(<span class="kw-2">&amp;</span><span class="ident">dt_input</span>);
+
+        <span class="macro">assert_eq!</span>(<span class="ident">dominant_row</span>, <span class="ident">expected</span>);
     }
 }
 </code></pre></div>

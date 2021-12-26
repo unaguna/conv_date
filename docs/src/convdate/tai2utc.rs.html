@@ -194,6 +194,20 @@
 <span id="194">194</span>
 <span id="195">195</span>
 <span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::convtbl::UtcTaiTable</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::Error</span>;
 <span class="kw">use</span> <span class="ident">chrono</span>::{<span class="ident">Duration</span>, <span class="ident">NaiveDateTime</span>, <span class="ident">Timelike</span>};
@@ -232,7 +246,6 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # See also</span>
-<span class="doccomment">/// * [`tai2utc_dt`] - It is same as `tai2utc`, except that the argument and the result are [`NaiveDateTime`].</span>
 <span class="doccomment">/// * [`tai2utc`](../tai2utc/index.html) (Binary crate) - The executable program which do same conversion.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tai2utc</span>(<span class="ident">datetime</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">utc_tai_table</span>: <span class="kw-2">&amp;</span><span class="ident">UtcTaiTable</span>, <span class="ident">dt_fmt</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">datetime</span> <span class="op">=</span> <span class="ident">NaiveDateTime::parse_from_str</span>(<span class="ident">datetime</span>, <span class="ident">dt_fmt</span>)
@@ -255,23 +268,6 @@
 <span class="doccomment">/// Returns the datetime in UTC.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Returns [`Error`](crate::error::Error) if it fail to convert.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use convdate;</span>
-<span class="doccomment">/// use convdate::convtbl::TaiUtcTable;</span>
-<span class="doccomment">/// use chrono::NaiveDate;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // Usually, lines read from the file are used as the argument of `from_lines`.</span>
-<span class="doccomment">/// let tai_utc_table = TaiUtcTable::from_lines(vec![&quot;2017-01-01T00:00:00 37&quot;], &quot;%Y-%m-%dT%H:%M:%S&quot;).unwrap();</span>
-<span class="doccomment">/// let utc_tai_table = From::from(&amp;tai_utc_table);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let utc = convdate::tai2utc_dt(</span>
-<span class="doccomment">///     &amp;NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 37),</span>
-<span class="doccomment">///     &amp;utc_tai_table);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(utc, Ok(NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 0)));</span>
-<span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # See also</span>
 <span class="doccomment">/// * [`tai2utc`] - It is same as `tai2utc_dt`, except that the argument and the result are [`str`] and [`String`].</span>
@@ -296,32 +292,45 @@
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::convtbl</span>::{<span class="ident">DiffTaiUtc</span>, <span class="ident">TaiUtcTable</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testmod</span>;
     <span class="kw">use</span> <span class="ident">chrono::NaiveDate</span>;
     <span class="kw">use</span> <span class="ident">rstest</span>::<span class="kw-2">*</span>;
 
     <span class="kw">const</span> <span class="ident">DT_FMT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;%Y-%m-%dT%H:%M:%S%.3f&quot;</span>;
 
     <span class="attribute">#[<span class="ident">rstest</span>]</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-01-02T11:22:33.000&quot;</span>, <span class="string">&quot;2017-01-02T11:23:10.000&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-01-02T11:22:33.123&quot;</span>, <span class="string">&quot;2017-01-02T11:23:10.123&quot;</span>)]</span>
+    <span class="comment">// Error when the input datetime is too low.</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2015-07-01T00:00:35.999&quot;</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">Error::DatetimeTooLowError</span>(<span class="string">&quot;2015-07-01 00:00:35.999&quot;</span>.<span class="ident">to_string</span>())))]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2015-07-01T00:00:36.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2015-07-01T00:00:00.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="comment">// regular cases</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-01-02T11:23:10.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2017-01-02T11:22:33.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-01-02T11:23:10.123&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2017-01-02T11:22:33.123&quot;</span>), <span class="prelude-val">None</span>)]</span>
     <span class="comment">// うるう秒が挿入される瞬間のテスト</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2016-12-31T23:59:59.000&quot;</span>, <span class="string">&quot;2017-01-01T00:00:35.000&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2016-12-31T23:59:60.000&quot;</span>, <span class="string">&quot;2017-01-01T00:00:36.000&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2016-12-31T23:59:60.123&quot;</span>, <span class="string">&quot;2017-01-01T00:00:36.123&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-01-01T00:00:00.000&quot;</span>, <span class="string">&quot;2017-01-01T00:00:37.000&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-01-01T00:00:35.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2016-12-31T23:59:59.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-01-01T00:00:36.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2016-12-31T23:59:60.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-01-01T00:00:36.123&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2016-12-31T23:59:60.123&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-01-01T00:00:37.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2017-01-01T00:00:00.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
     <span class="comment">// うるう秒が削除される瞬間のテスト</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-12-31T23:59:58.000&quot;</span>, <span class="string">&quot;2018-01-01T00:00:35.000&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2017-12-31T23:59:58.123&quot;</span>, <span class="string">&quot;2018-01-01T00:00:35.123&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2018-01-01T00:00:00.000&quot;</span>, <span class="string">&quot;2018-01-01T00:00:36.000&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2018-01-01T00:00:35.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2017-12-31T23:59:58.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2018-01-01T00:00:35.123&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2017-12-31T23:59:58.123&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2018-01-01T00:00:36.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2018-01-01T00:00:00.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
     <span class="comment">// うるう秒が2秒挿入される瞬間のテスト</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2018-12-31T23:59:59.000&quot;</span>, <span class="string">&quot;2019-01-01T00:00:35.000&quot;</span>)]</span>
-    <span class="comment">// #[case(&quot;2018-12-31T23:59:60.000&quot;, &quot;2019-01-01T00:00:36.000&quot;)]</span>
-    <span class="comment">// #[case(&quot;2018-12-31T23:59:61.000&quot;, &quot;2019-01-01T00:00:37.000&quot;)]</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2019-01-01T00:00:00.000&quot;</span>, <span class="string">&quot;2019-01-01T00:00:38.000&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2019-01-01T00:00:35.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2018-12-31T23:59:59.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="comment">// #[case(&quot;2019-01-01T00:00:36.000&quot;, Some(&quot;2018-12-31T23:59:60.000&quot;), None)]</span>
+    <span class="comment">// #[case(&quot;2019-01-01T00:00:37.000&quot;, Some(&quot;2018-12-31T23:59:61.000&quot;), None)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2019-01-01T00:00:38.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2019-01-01T00:00:00.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
     <span class="comment">// うるう秒が2秒削除される瞬間のテスト</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2019-12-31T23:59:57.000&quot;</span>, <span class="string">&quot;2020-01-01T00:00:35.000&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2020-01-01T00:00:00.000&quot;</span>, <span class="string">&quot;2020-01-01T00:00:36.000&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">test_tai2utc</span>(<span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_utc</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">tai</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2020-01-01T00:00:35.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2019-12-31T23:59:57.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2020-01-01T00:00:36.000&quot;</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;2020-01-01T00:00:00.000&quot;</span>), <span class="prelude-val">None</span>)]</span>
+    <span class="comment">// Error when the input datetime is illegal format.</span>
+    <span class="attribute">#[<span class="ident">case</span>(<span class="string">&quot;2019-12-31 23:59:57.000&quot;</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">Error::DatetimeParseError</span>(<span class="ident">tai</span>.<span class="ident">to_string</span>())))]</span>
+    <span class="kw">fn</span> <span class="ident">test_tai2utc</span>(
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">tai</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_ok</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_err</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>,
+    ) {
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">testmod::result</span>(<span class="ident">expected_ok</span>.<span class="ident">map</span>(<span class="ident">ToString::to_string</span>), <span class="ident">expected_err</span>);
+
         <span class="kw">let</span> <span class="ident">tai_utc_table</span>: <span class="ident">TaiUtcTable</span> <span class="op">=</span> <span class="macro">vec!</span>[
             <span class="ident">DiffTaiUtc</span> {
                 <span class="ident">datetime</span>: <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2015</span>, <span class="number">7</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
@@ -348,46 +357,65 @@
         <span class="kw">let</span> <span class="ident">utc_tai_table</span> <span class="op">=</span> <span class="ident">From::from</span>(<span class="kw-2">&amp;</span><span class="ident">tai_utc_table</span>);
         <span class="kw">let</span> <span class="ident">utc</span> <span class="op">=</span> <span class="ident">tai2utc</span>(<span class="kw-2">&amp;</span><span class="ident">tai</span>, <span class="kw-2">&amp;</span><span class="ident">utc_tai_table</span>, <span class="ident">DT_FMT</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">utc</span>, <span class="prelude-val">Ok</span>(<span class="ident">expected_utc</span>.<span class="ident">to_string</span>()));
+        <span class="macro">assert_eq!</span>(<span class="ident">utc</span>, <span class="ident">expected</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_error_on_illegal_format</span>() {
-        <span class="kw">let</span> <span class="ident">tai</span> <span class="op">=</span> <span class="string">&quot;2019-12-31 23:59:57.000&quot;</span>;
+    <span class="attribute">#[<span class="ident">rstest</span>]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="string">&quot;2017-01-02T11:23:10.000&quot;</span>,
+        <span class="string">&quot;%Y-%m-%dT%H:%M:%S%.3f&quot;</span>,
+        <span class="prelude-val">Some</span>(<span class="string">&quot;2017-01-02T11:22:33.000&quot;</span>),
+        <span class="prelude-val">None</span>
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="string">&quot;2017-01-02T11:23:10.123&quot;</span>,
+        <span class="string">&quot;%Y-%m-%dT%H:%M:%S%.3f&quot;</span>,
+        <span class="prelude-val">Some</span>(<span class="string">&quot;2017-01-02T11:22:33.123&quot;</span>),
+        <span class="prelude-val">None</span>
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="string">&quot;2017-01-02T11:23:10&quot;</span>,
+        <span class="string">&quot;%Y-%m-%dT%H:%M:%S%.3f&quot;</span>,
+        <span class="prelude-val">Some</span>(<span class="string">&quot;2017-01-02T11:22:33.000&quot;</span>),
+        <span class="prelude-val">None</span>
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="string">&quot;2017-01-02T11:23:10&quot;</span>,
+        <span class="string">&quot;%Y-%m-%dT%H:%M:%S&quot;</span>,
+        <span class="prelude-val">Some</span>(<span class="string">&quot;2017-01-02T11:22:33&quot;</span>),
+        <span class="prelude-val">None</span>
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="string">&quot;2017-01-02 11:23:10&quot;</span>,
+        <span class="string">&quot;%Y-%m-%d %H:%M:%S&quot;</span>,
+        <span class="prelude-val">Some</span>(<span class="string">&quot;2017-01-02 11:22:33&quot;</span>),
+        <span class="prelude-val">None</span>
+    )]</span>
+    <span class="attribute">#[<span class="ident">case</span>(
+        <span class="string">&quot;2017-01-02T11:23:10&quot;</span>,
+        <span class="string">&quot;%Y-%m-%d %H:%M:%S&quot;</span>,
+        <span class="prelude-val">None</span>,
+        <span class="prelude-val">Some</span>(<span class="ident">Error::DatetimeParseError</span>(<span class="ident">tai</span>.<span class="ident">to_string</span>()))
+    )]</span>
+    <span class="kw">fn</span> <span class="ident">test_tai2utc_arg_dt_fmt</span>(
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">tai</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">dt_fmt</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_ok</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
+        <span class="attribute">#[<span class="ident">case</span>]</span> <span class="ident">expected_err</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>,
+    ) {
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">expected_ok</span>
+            .<span class="ident">map</span>(<span class="ident">ToString::to_string</span>)
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">expected_err</span>.<span class="ident">unwrap</span>());
+
         <span class="kw">let</span> <span class="ident">tai_utc_table</span>: <span class="ident">TaiUtcTable</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">DiffTaiUtc</span> {
-            <span class="ident">datetime</span>: <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2015</span>, <span class="number">7</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
-            <span class="ident">diff_seconds</span>: <span class="number">36</span>,
+            <span class="ident">datetime</span>: <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
+            <span class="ident">diff_seconds</span>: <span class="number">37</span>,
         }]
         .<span class="ident">into</span>();
         <span class="kw">let</span> <span class="ident">utc_tai_table</span> <span class="op">=</span> <span class="ident">From::from</span>(<span class="kw-2">&amp;</span><span class="ident">tai_utc_table</span>);
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">tai2utc</span>(<span class="kw-2">&amp;</span><span class="ident">tai</span>, <span class="kw-2">&amp;</span><span class="ident">utc_tai_table</span>, <span class="ident">DT_FMT</span>);
+        <span class="kw">let</span> <span class="ident">utc</span> <span class="op">=</span> <span class="ident">tai2utc</span>(<span class="kw-2">&amp;</span><span class="ident">tai</span>, <span class="kw-2">&amp;</span><span class="ident">utc_tai_table</span>, <span class="ident">dt_fmt</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">error</span>, <span class="prelude-val">Err</span>(<span class="ident">Error::DatetimeParseError</span>(<span class="ident">tai</span>.<span class="ident">to_string</span>())))
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_error_on_too_low_datetime</span>() {
-        <span class="kw">let</span> <span class="ident">tai</span> <span class="op">=</span> <span class="string">&quot;2015-07-01T00:00:35.999&quot;</span>;
-        <span class="kw">let</span> <span class="ident">tai_utc_table</span>: <span class="ident">TaiUtcTable</span> <span class="op">=</span> <span class="macro">vec!</span>[
-            <span class="ident">DiffTaiUtc</span> {
-                <span class="ident">datetime</span>: <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2015</span>, <span class="number">7</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
-                <span class="ident">diff_seconds</span>: <span class="number">36</span>,
-            },
-            <span class="ident">DiffTaiUtc</span> {
-                <span class="ident">datetime</span>: <span class="ident">NaiveDate::from_ymd</span>(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>).<span class="ident">and_hms</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
-                <span class="ident">diff_seconds</span>: <span class="number">37</span>,
-            },
-        ]
-        .<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">utc_tai_table</span> <span class="op">=</span> <span class="ident">From::from</span>(<span class="kw-2">&amp;</span><span class="ident">tai_utc_table</span>);
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">tai2utc</span>(<span class="kw-2">&amp;</span><span class="ident">tai</span>, <span class="kw-2">&amp;</span><span class="ident">utc_tai_table</span>, <span class="ident">DT_FMT</span>);
-
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">error</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">Error::DatetimeTooLowError</span>(
-                <span class="string">&quot;2015-07-01 00:00:35.999&quot;</span>.<span class="ident">to_string</span>()
-            ))
-        )
+        <span class="macro">assert_eq!</span>(<span class="ident">utc</span>, <span class="ident">expected</span>);
     }
 }
 </code></pre></div>
