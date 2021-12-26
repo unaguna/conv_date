@@ -1,9 +1,9 @@
+use super::error::Error;
 use super::*;
-use crate::error::Error;
 use std::io::{BufRead, Write};
 
 pub trait Converter {
-    fn convert(&self, datetime: &str) -> Result<String, Error>;
+    fn convert(&self, datetime: &str) -> Result<String, crate::error::Error>;
 }
 
 pub fn main_convertion<C: Converter>(
@@ -12,7 +12,7 @@ pub fn main_convertion<C: Converter>(
     stdin: &mut impl BufRead,
     stdout: &mut impl Write,
     stderr: &mut impl Write,
-) -> i32 {
+) -> Result<(), Error> {
     // function for output to stdout
     let print_line = get_print_line(&params);
 
@@ -50,8 +50,8 @@ pub fn main_convertion<C: Converter>(
     }
 
     return if someone_is_err {
-        EXIT_CODE_SOME_DT_NOT_CONVERTED
+        Err(Error::FailedSomeConvertionError())
     } else {
-        EXIT_CODE_OK
+        Ok(())
     };
 }

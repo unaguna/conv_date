@@ -8,6 +8,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 mod converter;
+pub mod error;
+pub mod execcode;
 pub use converter::{main_convertion, Converter};
 pub mod tai2utc;
 pub mod tt2utc;
@@ -16,9 +18,6 @@ pub mod utc2tt;
 
 const TAI_UTC_TABLE_FILENAME: &str = "tai-utc.txt";
 const TAI_UTC_TABLE: &str = include_str!("tai-utc.txt");
-pub const EXIT_CODE_OK: i32 = 0;
-pub const EXIT_CODE_NG: i32 = 1;
-pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
 
 pub fn print_err(stderr: &mut impl Write, err: &dyn std::fmt::Display) {
     writeln!(stderr, "{}: {}", exe_name(), err).unwrap();

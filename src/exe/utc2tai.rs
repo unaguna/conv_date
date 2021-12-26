@@ -1,4 +1,4 @@
-use super::{main_convertion, Arguments, Converter, EnvValues, Parameters};
+use super::{execcode, main_convertion, Arguments, Converter, EnvValues, Parameters};
 use crate::convtbl::TaiUtcTable;
 use crate::error::Error;
 use crate::{exe, utc2tai};
@@ -27,13 +27,14 @@ pub fn main_inner(
         Ok(tai_utc_table) => tai_utc_table,
         Err(e) => {
             exe::print_err(stderr, &e);
-            return exe::EXIT_CODE_NG;
+            return execcode::EXIT_CODE_NG;
         }
     };
 
     let converter = Utc2TaiConverter::new(tai_utc_table, params.get_dt_fmt());
 
-    return main_convertion(&converter, &params, stdin, stdout, stderr);
+    let result = main_convertion(&converter, &params, stdin, stdout, stderr);
+    return execcode::execcode(&result);
 }
 
 struct Utc2TaiConverter<'a> {
