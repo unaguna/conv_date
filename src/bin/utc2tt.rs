@@ -91,7 +91,6 @@
 //! If the datetimes are not specified as arguments,
 //! they can be entered from the standard input instead.
 
-extern crate convdate;
 use convdate::exe::utc2tt::main_inner;
 use std::env;
 use std::io::{self, BufWriter};
