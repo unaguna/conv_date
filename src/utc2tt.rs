@@ -1,6 +1,7 @@
 use crate::convtbl::TaiUtcTable;
 use crate::error::Error;
-use crate::{tai2tt_dt, utc2tai_dt};
+use crate::tt::tai2tt_dt;
+use crate::utc2tai::utc2tai_dt;
 use chrono::NaiveDateTime;
 
 /// Convert datetime
@@ -36,7 +37,6 @@ use chrono::NaiveDateTime;
 /// ```
 ///
 /// # See also
-/// * [`utc2tt_dt`] - It is same as `utc2tt`, except that the argument and the result are [`NaiveDateTime`].
 /// * [`utc2tt`](../utc2tt/index.html) (Binary crate) - The executable program which do same conversion.
 pub fn utc2tt(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
@@ -59,22 +59,6 @@ pub fn utc2tt(datetime: &str, tai_utc_table: &TaiUtcTable, dt_fmt: &str) -> Resu
 /// Returns the datetime in TT.
 ///
 /// Returns [`Error`](crate::error::Error) if it fail to convert.
-///
-/// # Examples
-/// ```
-/// use convdate;
-/// use convdate::convtbl::TaiUtcTable;
-/// use chrono::NaiveDate;
-///
-/// // Usually, lines read from the file are used as the argument of `from_lines`.
-/// let tai_utc_table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
-///
-/// let tt = convdate::utc2tt_dt(
-///     &NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 0),
-///     &tai_utc_table);
-///
-/// assert_eq!(tt, Ok(NaiveDate::from_ymd(2017, 1, 1).and_hms_milli(12, 1, 9, 184)));
-/// ```
 ///
 /// # See also
 /// * [`utc2tt`] - It is same as `utc2tt_dt`, except that the argument and the result are [`str`] and [`String`].
