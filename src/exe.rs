@@ -7,6 +7,8 @@ use std::ffi::OsString;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
+mod converter;
+pub use converter::{main_convertion, Converter};
 pub mod tai2utc;
 pub mod tt2utc;
 pub mod utc2tai;

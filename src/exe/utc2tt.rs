@@ -1,4 +1,6 @@
-use super::{Arguments, EnvValues, Parameters};
+use super::{main_convertion, Arguments, Converter, EnvValues, Parameters};
+use crate::convtbl::TaiUtcTable;
+use crate::error::Error;
 use crate::{exe, utc2tt};
 use std::ffi::OsString;
 use std::io::{BufRead, Write};
@@ -29,47 +31,26 @@ pub fn main_inner(
         }
     };
 
-    // function for output to stdout
-    let print_line = exe::get_print_line(&params);
+    let converter = Utc2TtConverter::new(tai_utc_table, params.get_dt_fmt());
 
-    // Chooses input datetimes stream
-    let dt_stream: Box<dyn Iterator<Item = Result<String, _>>> = match args.get_datetimes() {
-        Some(datetimes) => Box::new(datetimes.map(|s| Ok(s.to_string()))),
-        None => Box::new(stdin.lines()),
-    };
+    return main_convertion(&converter, &args, &params, stdin, stdout, stderr);
+}
 
-    // calc TT
-    let mut someone_is_err = false;
-    for in_utc in dt_stream {
-        let in_utc = match in_utc {
-            Ok(in_utc) => in_utc,
-            Err(e) => {
-                someone_is_err = true;
-                exe::print_err(stderr, &e);
+struct Utc2TtConverter<'a> {
+    table: TaiUtcTable,
+    dt_fmt: &'a str,
+}
 
-                // This error occurs when the input stream is invalid.
-                // In other words, subsequent inputs are also likely to be abnormal,
-                // so the process is terminated without `continue`.
-                break;
-            }
-        };
-
-        let tt = utc2tt(&in_utc, &tai_utc_table, params.get_dt_fmt());
-
-        match tt {
-            Err(e) => {
-                someone_is_err = true;
-                exe::print_err(stderr, &e)
-            }
-            Ok(tt) => print_line(stdout, &in_utc, &tt),
-        }
+impl Utc2TtConverter<'_> {
+    pub fn new(table: TaiUtcTable, dt_fmt: &str) -> Utc2TtConverter {
+        Utc2TtConverter { table, dt_fmt }
     }
+}
 
-    return if someone_is_err {
-        exe::EXIT_CODE_SOME_DT_NOT_CONVERTED
-    } else {
-        exe::EXIT_CODE_OK
-    };
+impl Converter for Utc2TtConverter<'_> {
+    fn convert(&self, datetime: &str) -> Result<String, Error> {
+        utc2tt(datetime, &self.table, &self.dt_fmt)
+    }
 }
 
 #[cfg(test)]
