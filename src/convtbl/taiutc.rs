@@ -1,5 +1,6 @@
 use crate::error::Error;
 use chrono::NaiveDateTime;
+use std::fmt;
 
 /// Difference (TAI - UTC) and the datetime at which it is applied
 ///
@@ -7,7 +8,7 @@ use chrono::NaiveDateTime;
 ///
 /// # See also
 /// - [`TaiUtcTable`] - It express the TAI-UTC table.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct DiffTaiUtc {
     /// (UTC) The moment when the difference (TAI - UTC) changes due to a leap second
     pub datetime: NaiveDateTime,
@@ -59,6 +60,12 @@ impl DiffTaiUtc {
     }
 }
 
+impl fmt::Display for DiffTaiUtc {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.datetime, self.diff_seconds)
+    }
+}
+
 /// TAI-UTC conversion table
 ///
 /// It expresses [the TAI-UTC table](https://www.ietf.org/timezones/data/leap-seconds.list); it is used for conversion from UTC to TAI.
@@ -70,16 +77,24 @@ impl DiffTaiUtc {
 /// ```
 /// use convdate::convtbl::TaiUtcTable;
 /// use chrono::NaiveDate;
+/// # use std::error::Error;
 ///
-/// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S").unwrap();
+/// # fn try_main() -> Result<(), Box<Error>> {
+/// let table = TaiUtcTable::from_lines(vec!["2017-01-01T00:00:00 37"], "%Y-%m-%dT%H:%M:%S")?;
 /// for row in table.iter() {
 ///     assert_eq!(row.datetime, NaiveDate::from_ymd(2017, 1, 1).and_hms(0, 0, 0));
 ///     assert_eq!(row.diff_seconds, 37);
 /// }
+/// #
+/// #     Ok(())
+/// # }
+/// #
+/// # fn main() {
+/// #     try_main().unwrap();
+/// # }
 /// ```
-pub struct TaiUtcTable {
-    diff_list: Vec<DiffTaiUtc>,
-}
+#[derive(Debug)]
+pub struct TaiUtcTable(Vec<DiffTaiUtc>);
 
 impl TaiUtcTable {
     /// Construct `TaiUtcTable` from lines of the TAI-UTC table file.
@@ -101,7 +116,7 @@ impl TaiUtcTable {
             .into_iter()
             .map(|line| DiffTaiUtc::from_line(line.as_ref(), " ", fmt))
             .collect::<Result<Vec<_>, _>>()?;
-        Ok(TaiUtcTable { diff_list })
+        Ok(TaiUtcTable(diff_list))
     }
 
     /// Pick the row to use to calculate TAI from the UTC datetime.
@@ -130,20 +145,21 @@ impl TaiUtcTable {
 
 impl From<Vec<DiffTaiUtc>> for TaiUtcTable {
     fn from(diff_list: Vec<DiffTaiUtc>) -> Self {
-        TaiUtcTable { diff_list }
+        TaiUtcTable(diff_list)
     }
 }
 
 impl std::ops::Deref for TaiUtcTable {
     type Target = [DiffTaiUtc];
     fn deref(&self) -> &[DiffTaiUtc] {
-        self.diff_list.deref()
+        self.0.deref()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::testmod;
     use chrono::{NaiveDate, NaiveDateTime};
     use rstest::*;
 
@@ -152,52 +168,82 @@ mod tests {
         "2017-01-02T11:22:33 15",
         " ",
         "%Y-%m-%dT%H:%M:%S",
-        NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33),
-        15
+        Some(DiffTaiUtc{datetime:NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33), diff_seconds: 15}),
+        None
     )]
     #[case(
         "20170102112233,15",
         ",",
         "%Y%m%d%H%M%S",
-        NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33),
-        15
+        Some(DiffTaiUtc{datetime:NaiveDate::from_ymd(2017, 1, 2).and_hms(11, 22, 33), diff_seconds: 15}),
+        None,
+    )]
+    #[case(
+        "2017-01-02T11:22:33 15 1", // Too many values lead the error
+        " ",
+        "%Y-%m-%dT%H:%M:%S",
+        None,
+        Some(Error::TaiUtcTableParseError(line.to_string())),
+    )]
+    #[case(
+        "2017-01-0211:22:33 15", // Illegal datetime format leads the error
+        " ",
+        "%Y-%m-%dT%H:%M:%S",
+        None,
+        Some(Error::TaiUtcTableDatetimeParseError(
+            "2017-01-0211:22:33".to_string()
+        )),
     )]
     fn test_diff_tai_utc_from_line(
         #[case] line: &str,
         #[case] sep: &str,
         #[case] fmt: &str,
-        #[case] expected_dt: NaiveDateTime,
-        #[case] expected_diff: i64,
+        #[case] expected_ok: Option<DiffTaiUtc>,
+        #[case] expected_err: Option<Error>,
     ) {
+        let expected = testmod::result(expected_ok, expected_err);
+
         let result = DiffTaiUtc::from_line(line, sep, fmt);
 
-        assert_eq!(
-            result,
-            Ok(DiffTaiUtc {
-                datetime: expected_dt,
-                diff_seconds: expected_diff
-            })
-        );
+        assert_eq!(result, expected);
     }
 
-    #[test]
-    fn test_diff_tai_utc_from_illegal_line() {
-        let line = "2017-01-02T11:22:33 15 1";
-        let result = DiffTaiUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
+    #[rstest]
+    #[case(
+        NaiveDate::from_ymd(2012, 6, 30).and_hms_milli(23, 59, 59, 1_000),
+        None,
+        Some(Error::DatetimeTooLowError("2012-06-30 23:59:60".to_string())),
+    )]
+    #[case(
+        NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 0),
+        Some(DiffTaiUtc{datetime: NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 0), diff_seconds: 35}),
+        None,
+    )]
+    #[case(
+        NaiveDate::from_ymd(2015, 6, 30).and_hms_milli(23, 59, 59, 1_000),
+        Some(DiffTaiUtc{datetime: NaiveDate::from_ymd(2012, 7, 1).and_hms(0, 0, 0), diff_seconds: 35}),
+        None,
+    )]
+    #[case(
+        NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0),
+        Some(DiffTaiUtc{datetime: NaiveDate::from_ymd(2015, 7, 1).and_hms(0, 0, 0), diff_seconds: 36}),
+        None,
+    )]
+    fn test_pick_dominant_row<'a>(
+        #[case] dt_input: NaiveDateTime,
+        #[case] expected_ok: Option<DiffTaiUtc>,
+        #[case] expected_err: Option<Error>,
+    ) {
+        let expected = testmod::result(expected_ok.as_ref(), expected_err);
 
-        assert_eq!(result, Err(Error::TaiUtcTableParseError(line.to_string())))
-    }
-
-    #[test]
-    fn test_diff_tai_utc_from_illegal_datetime() {
-        let line = "2017-01-0211:22:33 15";
-        let result = DiffTaiUtc::from_line(line, " ", "%Y-%m-%dT%H:%M:%S");
-
-        assert_eq!(
-            result,
-            Err(Error::TaiUtcTableDatetimeParseError(
-                "2017-01-0211:22:33".to_string()
-            ))
+        let tai_utc_table = TaiUtcTable::from_lines(
+            vec!["20120701000000 35", "20150701000000 36"],
+            "%Y%m%d%H%M%S",
         )
+        .unwrap();
+
+        let dominant_row = tai_utc_table.pick_dominant_row(&dt_input);
+
+        assert_eq!(dominant_row, expected);
     }
 }
