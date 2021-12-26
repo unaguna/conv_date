@@ -1,7 +1,9 @@
-use super::{Arguments, EnvValues, Parameters};
-use crate::{exe, tt2utc};
+use super::{execcode, main_convertion, Arguments, Converter, EnvValues, Parameters};
+use crate::exe;
 use std::ffi::OsString;
 use std::io::{BufRead, Write};
+mod converter;
+use converter::Tt2UtcConverter;
 
 pub fn main_inner(
     args: impl IntoIterator<Item = impl Into<OsString> + Clone>,
@@ -25,51 +27,14 @@ pub fn main_inner(
         Ok(tai_utc_table) => From::from(&tai_utc_table),
         Err(e) => {
             exe::print_err(stderr, &e);
-            return exe::EXIT_CODE_NG;
+            return execcode::EXIT_CODE_NG;
         }
     };
 
-    // function for output to stdout
-    let print_line = exe::get_print_line(&params);
+    let converter = Tt2UtcConverter::new(utc_tai_table, params.get_dt_fmt());
 
-    // Chooses input datetimes stream
-    let dt_stream: Box<dyn Iterator<Item = Result<String, _>>> = match args.get_datetimes() {
-        Some(datetimes) => Box::new(datetimes.map(|s| Ok(s.to_string()))),
-        None => Box::new(stdin.lines()),
-    };
-
-    // calc UTC
-    let mut someone_is_err = false;
-    for in_tt in dt_stream {
-        let in_tt = match in_tt {
-            Ok(in_tt) => in_tt,
-            Err(e) => {
-                someone_is_err = true;
-                exe::print_err(stderr, &e);
-
-                // This error occurs when the input stream is invalid.
-                // In other words, subsequent inputs are also likely to be abnormal,
-                // so the process is terminated without `continue`.
-                break;
-            }
-        };
-
-        let utc = tt2utc(&in_tt, &utc_tai_table, params.get_dt_fmt());
-
-        match utc {
-            Err(e) => {
-                someone_is_err = true;
-                exe::print_err(stderr, &e)
-            }
-            Ok(utc) => print_line(stdout, &in_tt, &utc),
-        }
-    }
-
-    return if someone_is_err {
-        exe::EXIT_CODE_SOME_DT_NOT_CONVERTED
-    } else {
-        exe::EXIT_CODE_OK
-    };
+    let result = main_convertion(&converter, &params, stdin, stdout, stderr);
+    return execcode::execcode(&result);
 }
 
 #[cfg(test)]

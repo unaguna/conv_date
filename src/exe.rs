@@ -7,6 +7,10 @@ use std::ffi::OsString;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
+mod converter;
+pub mod error;
+pub mod execcode;
+pub use converter::{main_convertion, Converter};
 pub mod tai2utc;
 pub mod tt2utc;
 pub mod utc2tai;
@@ -14,9 +18,6 @@ pub mod utc2tt;
 
 const TAI_UTC_TABLE_FILENAME: &str = "tai-utc.txt";
 const TAI_UTC_TABLE: &str = include_str!("tai-utc.txt");
-pub const EXIT_CODE_OK: i32 = 0;
-pub const EXIT_CODE_NG: i32 = 1;
-pub const EXIT_CODE_SOME_DT_NOT_CONVERTED: i32 = 2;
 
 pub fn print_err(stderr: &mut impl Write, err: &dyn std::fmt::Display) {
     writeln!(stderr, "{}: {}", exe_name(), err).unwrap();
@@ -141,7 +142,6 @@ impl Arguments<'_> {
     }
 
     pub fn get_datetimes(&self) -> Option<Values> {
-        // It can unwrap because "datetime" is required.
         return self.matches.values_of("datetime");
     }
 }
@@ -182,6 +182,7 @@ impl EnvValues {
 
 #[derive(Debug)]
 pub struct Parameters<'a> {
+    args: &'a Arguments<'a>,
     dt_fmt: &'a str,
     tai_utc_table_dt_fmt: &'a str,
     tai_utc_table_path: Option<PathBuf>,
@@ -191,11 +192,16 @@ pub struct Parameters<'a> {
 impl Parameters<'_> {
     pub fn new<'a>(args: &'a Arguments, env_vars: &'a EnvValues) -> Parameters<'a> {
         return Parameters {
+            args,
             dt_fmt: Parameters::decide_dt_fmt(args, env_vars),
             tai_utc_table_dt_fmt: Parameters::decide_tai_utc_table_dt_fmt(args, env_vars),
             tai_utc_table_path: Parameters::decide_tai_utc_table_path(args, env_vars),
             io_pair_flg: args.io_pair_flg,
         };
+    }
+
+    pub fn get_datetimes(&self) -> Option<Values> {
+        return self.args.matches.values_of("datetime");
     }
 
     pub fn get_dt_fmt(&self) -> &str {

@@ -1,7 +1,9 @@
-use super::{Arguments, EnvValues, Parameters};
-use crate::{exe, utc2tai};
+use super::{execcode, main_convertion, Arguments, Converter, EnvValues, Parameters};
+use crate::exe;
 use std::ffi::OsString;
 use std::io::{BufRead, Write};
+mod converter;
+use converter::Utc2TtConverter;
 
 pub fn main_inner(
     args: impl IntoIterator<Item = impl Into<OsString> + Clone>,
@@ -10,7 +12,7 @@ pub fn main_inner(
     stdout: &mut impl Write,
     stderr: &mut impl Write,
 ) -> i32 {
-    let args = Arguments::new("Converter from UTC to TAI", args);
+    let args = Arguments::new("Converter from UTC to TT", args);
     let env_vars = EnvValues::new(env_vars);
 
     // Analyze the arguments and the environment variables.
@@ -25,51 +27,14 @@ pub fn main_inner(
         Ok(tai_utc_table) => tai_utc_table,
         Err(e) => {
             exe::print_err(stderr, &e);
-            return exe::EXIT_CODE_NG;
+            return execcode::EXIT_CODE_NG;
         }
     };
 
-    // function for output to stdout
-    let print_line = exe::get_print_line(&params);
+    let converter = Utc2TtConverter::new(tai_utc_table, params.get_dt_fmt());
 
-    // Chooses input datetimes stream
-    let dt_stream: Box<dyn Iterator<Item = Result<String, _>>> = match args.get_datetimes() {
-        Some(datetimes) => Box::new(datetimes.map(|s| Ok(s.to_string()))),
-        None => Box::new(stdin.lines()),
-    };
-
-    // calc TAI
-    let mut someone_is_err = false;
-    for in_utc in dt_stream {
-        let in_utc = match in_utc {
-            Ok(in_utc) => in_utc,
-            Err(e) => {
-                someone_is_err = true;
-                exe::print_err(stderr, &e);
-
-                // This error occurs when the input stream is invalid.
-                // In other words, subsequent inputs are also likely to be abnormal,
-                // so the process is terminated without `continue`.
-                break;
-            }
-        };
-
-        let tai = utc2tai(&in_utc, &tai_utc_table, params.get_dt_fmt());
-
-        match tai {
-            Err(e) => {
-                someone_is_err = true;
-                exe::print_err(stderr, &e)
-            }
-            Ok(tai) => print_line(stdout, &in_utc, &tai),
-        }
-    }
-
-    return if someone_is_err {
-        exe::EXIT_CODE_SOME_DT_NOT_CONVERTED
-    } else {
-        exe::EXIT_CODE_OK
-    };
+    let result = main_convertion(&converter, &params, stdin, stdout, stderr);
+    return execcode::execcode(&result);
 }
 
 #[cfg(test)]
@@ -113,16 +78,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015-07-01T00:00:34.000\n\
-            2015-07-01T00:00:35.001\n\
-            2015-07-01T00:00:36.002\n\
-            2015-07-01T00:00:37.003\n\
-            2015-07-01T00:00:38.004\n\
-            2017-01-01T00:00:35.000\n\
-            2017-01-01T00:00:36.000\n\
-            2017-01-01T00:00:37.000\n\
-            2017-01-01T00:00:38.000\n\
-            2017-01-01T00:00:39.000\n"
+            "2015-07-01T00:01:06.184\n\
+            2015-07-01T00:01:07.185\n\
+            2015-07-01T00:01:08.186\n\
+            2015-07-01T00:01:09.187\n\
+            2015-07-01T00:01:10.188\n\
+            2017-01-01T00:01:07.184\n\
+            2017-01-01T00:01:08.184\n\
+            2017-01-01T00:01:09.184\n\
+            2017-01-01T00:01:10.184\n\
+            2017-01-01T00:01:11.184\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -171,13 +136,13 @@ mod tests {
         assert_eq!(exec_code, 2);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015-07-01T00:00:04.000\n\
-            2015-07-01T00:00:05.001\n\
-            2015-07-01T00:00:07.003\n\
-            2015-07-01T00:00:08.004\n\
-            2017-01-01T00:00:07.000\n\
-            2017-01-01T00:00:08.000\n\
-            2017-01-01T00:00:09.000\n"
+            "2015-07-01T00:00:36.184\n\
+            2015-07-01T00:00:37.185\n\
+            2015-07-01T00:00:39.187\n\
+            2015-07-01T00:00:40.188\n\
+            2017-01-01T00:00:39.184\n\
+            2017-01-01T00:00:40.184\n\
+            2017-01-01T00:00:41.184\n"
         );
         assert_eq!(
             String::from_utf8_lossy(&stderr_buf),
@@ -389,16 +354,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015-07-01T00:00:04.000\n\
-            2015-07-01T00:00:05.000\n\
-            2015-07-01T00:00:06.000\n\
-            2015-07-01T00:00:07.000\n\
-            2015-07-01T00:00:08.000\n\
-            2017-01-01T00:00:05.000\n\
-            2017-01-01T00:00:06.000\n\
-            2017-01-01T00:00:07.000\n\
-            2017-01-01T00:00:08.000\n\
-            2017-01-01T00:00:09.000\n"
+            "2015-07-01T00:00:36.184\n\
+            2015-07-01T00:00:37.184\n\
+            2015-07-01T00:00:38.184\n\
+            2015-07-01T00:00:39.184\n\
+            2015-07-01T00:00:40.184\n\
+            2017-01-01T00:00:37.184\n\
+            2017-01-01T00:00:38.184\n\
+            2017-01-01T00:00:39.184\n\
+            2017-01-01T00:00:40.184\n\
+            2017-01-01T00:00:41.184\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -493,16 +458,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015-07-01T00:00:04.000\n\
-            2015-07-01T00:00:05.001\n\
-            2015-07-01T00:00:06.002\n\
-            2015-07-01T00:00:07.003\n\
-            2015-07-01T00:00:08.004\n\
-            2017-01-01T00:00:05.000\n\
-            2017-01-01T00:00:06.000\n\
-            2017-01-01T00:00:07.000\n\
-            2017-01-01T00:00:08.000\n\
-            2017-01-01T00:00:09.000\n"
+            "2015-07-01T00:00:36.184\n\
+            2015-07-01T00:00:37.185\n\
+            2015-07-01T00:00:38.186\n\
+            2015-07-01T00:00:39.187\n\
+            2015-07-01T00:00:40.188\n\
+            2017-01-01T00:00:37.184\n\
+            2017-01-01T00:00:38.184\n\
+            2017-01-01T00:00:39.184\n\
+            2017-01-01T00:00:40.184\n\
+            2017-01-01T00:00:41.184\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -556,16 +521,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015-07-01T00:00:04.000\n\
-            2015-07-01T00:00:05.000\n\
-            2015-07-01T00:00:06.000\n\
-            2015-07-01T00:00:07.000\n\
-            2015-07-01T00:00:08.000\n\
-            2017-01-01T00:00:05.000\n\
-            2017-01-01T00:00:06.000\n\
-            2017-01-01T00:00:07.000\n\
-            2017-01-01T00:00:08.000\n\
-            2017-01-01T00:00:09.000\n"
+            "2015-07-01T00:00:36.184\n\
+            2015-07-01T00:00:37.184\n\
+            2015-07-01T00:00:38.184\n\
+            2015-07-01T00:00:39.184\n\
+            2015-07-01T00:00:40.184\n\
+            2017-01-01T00:00:37.184\n\
+            2017-01-01T00:00:38.184\n\
+            2017-01-01T00:00:39.184\n\
+            2017-01-01T00:00:40.184\n\
+            2017-01-01T00:00:41.184\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -616,16 +581,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "20150701000004\n\
-            20150701000005\n\
-            20150701000006\n\
-            20150701000007\n\
-            20150701000008\n\
-            20170101000005\n\
-            20170101000006\n\
-            20170101000007\n\
-            20170101000008\n\
-            20170101000009\n"
+            "20150701000036\n\
+            20150701000037\n\
+            20150701000038\n\
+            20150701000039\n\
+            20150701000040\n\
+            20170101000037\n\
+            20170101000038\n\
+            20170101000039\n\
+            20170101000040\n\
+            20170101000041\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -677,16 +642,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "20150701000004\n\
-            20150701000005\n\
-            20150701000006\n\
-            20150701000007\n\
-            20150701000008\n\
-            20170101000005\n\
-            20170101000006\n\
-            20170101000007\n\
-            20170101000008\n\
-            20170101000009\n"
+            "20150701000036\n\
+            20150701000037\n\
+            20150701000038\n\
+            20150701000039\n\
+            20150701000040\n\
+            20170101000037\n\
+            20170101000038\n\
+            20170101000039\n\
+            20170101000040\n\
+            20170101000041\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -740,16 +705,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015/07/01-00:00:04\n\
-            2015/07/01-00:00:05\n\
-            2015/07/01-00:00:06\n\
-            2015/07/01-00:00:07\n\
-            2015/07/01-00:00:08\n\
-            2017/01/01-00:00:05\n\
-            2017/01/01-00:00:06\n\
-            2017/01/01-00:00:07\n\
-            2017/01/01-00:00:08\n\
-            2017/01/01-00:00:09\n"
+            "2015/07/01-00:00:36\n\
+            2015/07/01-00:00:37\n\
+            2015/07/01-00:00:38\n\
+            2015/07/01-00:00:39\n\
+            2015/07/01-00:00:40\n\
+            2017/01/01-00:00:37\n\
+            2017/01/01-00:00:38\n\
+            2017/01/01-00:00:39\n\
+            2017/01/01-00:00:40\n\
+            2017/01/01-00:00:41\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -800,16 +765,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015-07-01T00:00:04.000\n\
-            2015-07-01T00:00:05.000\n\
-            2015-07-01T00:00:06.000\n\
-            2015-07-01T00:00:07.000\n\
-            2015-07-01T00:00:08.000\n\
-            2017-01-01T00:00:05.000\n\
-            2017-01-01T00:00:06.000\n\
-            2017-01-01T00:00:07.000\n\
-            2017-01-01T00:00:08.000\n\
-            2017-01-01T00:00:09.000\n"
+            "2015-07-01T00:00:36.184\n\
+            2015-07-01T00:00:37.184\n\
+            2015-07-01T00:00:38.184\n\
+            2015-07-01T00:00:39.184\n\
+            2015-07-01T00:00:40.184\n\
+            2017-01-01T00:00:37.184\n\
+            2017-01-01T00:00:38.184\n\
+            2017-01-01T00:00:39.184\n\
+            2017-01-01T00:00:40.184\n\
+            2017-01-01T00:00:41.184\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -861,16 +826,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015-07-01T00:00:04.000\n\
-            2015-07-01T00:00:05.000\n\
-            2015-07-01T00:00:06.000\n\
-            2015-07-01T00:00:07.000\n\
-            2015-07-01T00:00:08.000\n\
-            2017-01-01T00:00:05.000\n\
-            2017-01-01T00:00:06.000\n\
-            2017-01-01T00:00:07.000\n\
-            2017-01-01T00:00:08.000\n\
-            2017-01-01T00:00:09.000\n"
+            "2015-07-01T00:00:36.184\n\
+            2015-07-01T00:00:37.184\n\
+            2015-07-01T00:00:38.184\n\
+            2015-07-01T00:00:39.184\n\
+            2015-07-01T00:00:40.184\n\
+            2017-01-01T00:00:37.184\n\
+            2017-01-01T00:00:38.184\n\
+            2017-01-01T00:00:39.184\n\
+            2017-01-01T00:00:40.184\n\
+            2017-01-01T00:00:41.184\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -924,16 +889,16 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015-07-01T00:00:04.000\n\
-            2015-07-01T00:00:05.000\n\
-            2015-07-01T00:00:06.000\n\
-            2015-07-01T00:00:07.000\n\
-            2015-07-01T00:00:08.000\n\
-            2017-01-01T00:00:05.000\n\
-            2017-01-01T00:00:06.000\n\
-            2017-01-01T00:00:07.000\n\
-            2017-01-01T00:00:08.000\n\
-            2017-01-01T00:00:09.000\n"
+            "2015-07-01T00:00:36.184\n\
+            2015-07-01T00:00:37.184\n\
+            2015-07-01T00:00:38.184\n\
+            2015-07-01T00:00:39.184\n\
+            2015-07-01T00:00:40.184\n\
+            2017-01-01T00:00:37.184\n\
+            2017-01-01T00:00:38.184\n\
+            2017-01-01T00:00:39.184\n\
+            2017-01-01T00:00:40.184\n\
+            2017-01-01T00:00:41.184\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -959,8 +924,8 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2015-07-01T00:00:34.000\n\
-            2015-07-01T00:00:35.001\n"
+            "2015-07-01T00:01:06.184\n\
+            2015-07-01T00:01:07.185\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
@@ -986,8 +951,8 @@ mod tests {
         assert_eq!(exec_code, 0);
         assert_eq!(
             String::from_utf8_lossy(&stdout_buf),
-            "2017-01-01T00:00:38.000\n\
-            2017-01-01T00:00:39.000\n"
+            "2017-01-01T00:01:10.184\n\
+            2017-01-01T00:01:11.184\n"
         );
         assert_eq!(String::from_utf8_lossy(&stderr_buf), "");
     }
