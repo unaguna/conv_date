@@ -26,9 +26,6 @@ const D_TT_TAI_MS: i64 = 32184;
 ///
 /// assert_eq!(tai, Ok("2017-01-01T11:59:27.816".to_string()));
 /// ```
-///
-/// # See also
-/// * [`tt2tai_dt`] - It is same as `tt2tai`, except that the argument and the result are [`NaiveDateTime`].
 pub fn tt2tai(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
@@ -47,17 +44,6 @@ pub fn tt2tai(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
 /// Returns the datetime in TAI.
 ///
 /// Returns [`Error`](crate::error::Error) if it fail to convert.
-///
-/// # Examples
-/// ```
-/// use convdate;
-/// use chrono::NaiveDate;
-///
-/// let tai = convdate::tt2tai_dt(
-///     &NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 0));
-///
-/// assert_eq!(tai, NaiveDate::from_ymd(2017, 1, 1).and_hms_milli(11, 59, 27, 816));
-/// ```
 ///
 /// # See also
 /// * [`tt2tai`] - It is same as `tt2tai_dt`, except that the argument and the result are [`str`] and [`String`].
@@ -88,9 +74,6 @@ pub fn tt2tai_dt(datetime: &NaiveDateTime) -> NaiveDateTime {
 ///
 /// assert_eq!(tai, Ok("2017-01-01T12:00:32.184".to_string()));
 /// ```
-///
-/// # See also
-/// * [`tai2tt_dt`] - It is same as `tai2tt`, except that the argument and the result are [`NaiveDateTime`].
 pub fn tai2tt(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
@@ -109,17 +92,6 @@ pub fn tai2tt(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
 /// Returns the datetime in TT.
 ///
 /// Returns [`Error`](crate::error::Error) if it fail to convert.
-///
-/// # Examples
-/// ```
-/// use convdate;
-/// use chrono::NaiveDate;
-///
-/// let tai = convdate::tai2tt_dt(
-///     &NaiveDate::from_ymd(2017, 1, 1).and_hms(12, 0, 0));
-///
-/// assert_eq!(tai, NaiveDate::from_ymd(2017, 1, 1).and_hms_milli(12, 0, 32, 184));
-/// ```
 ///
 /// # See also
 /// * [`tai2tt`] - It is same as `tai2tt_dt`, except that the argument and the result are [`str`] and [`String`].
