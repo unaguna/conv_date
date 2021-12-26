@@ -8,7 +8,6 @@ pub trait Converter {
 
 pub fn main_convertion<C: Converter>(
     converter: &C,
-    args: &Arguments,
     params: &Parameters,
     stdin: &mut impl BufRead,
     stdout: &mut impl Write,
@@ -18,7 +17,7 @@ pub fn main_convertion<C: Converter>(
     let print_line = get_print_line(&params);
 
     // Chooses input datetimes stream
-    let dt_stream: Box<dyn Iterator<Item = Result<String, _>>> = match args.get_datetimes() {
+    let dt_stream: Box<dyn Iterator<Item = Result<String, _>>> = match params.get_datetimes() {
         Some(datetimes) => Box::new(datetimes.map(|s| Ok(s.to_string()))),
         None => Box::new(stdin.lines()),
     };

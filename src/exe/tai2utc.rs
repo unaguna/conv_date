@@ -33,7 +33,7 @@ pub fn main_inner(
 
     let converter = Tai2UtcConverter::new(utc_tai_table, params.get_dt_fmt());
 
-    return main_convertion(&converter, &args, &params, stdin, stdout, stderr);
+    return main_convertion(&converter, &params, stdin, stdout, stderr);
 }
 
 struct Tai2UtcConverter<'a> {
