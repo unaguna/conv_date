@@ -24,7 +24,7 @@
 
 use convdate::exe::tai2utc::main_inner;
 use std::env;
-use std::io::{self, BufWriter};
+use std::io;
 
 #[doc(hidden)]
 fn main() {
@@ -32,7 +32,7 @@ fn main() {
         env::args(),
         env::vars(),
         &mut io::stdin().lock(),
-        &mut BufWriter::new(io::stdout().lock()),
+        &mut io::stdout().lock(),
         &mut io::stderr(),
     );
     std::process::exit(exit_code);
