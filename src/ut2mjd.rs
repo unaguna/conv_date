@@ -1,7 +1,30 @@
 use crate::error::Error;
+use chrono::{Datelike, NaiveDateTime, Timelike};
 
 pub fn ut2mjd(datetime: &str, dt_fmt: &str) -> Result<f64, Error> {
-    panic!("Not implemented.");
+    let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
+        .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
+    let mjd = ut2mjd_dt(&datetime)?;
+    Ok(mjd)
+}
+
+pub fn ut2mjd_dt(datetime: &NaiveDateTime) -> Result<f64, Error> {
+    let year: i64 = datetime.year().into();
+    let month_shift: i64 = ((datetime.month() + 10) % 12).into();
+    let day: i64 = datetime.day().into();
+
+    // mjd_date = [365.25 * y] + [y / 400] - [y / 100] + [30.59(m-2)] + d - 678912
+    let mjd_date: i64 =
+        (1461 * year / 4) + (year / 400) - (year / 100) + (3059 * month_shift / 100) + day - 678912;
+
+    let nanoseconds_from_midnight: u64 = (datetime.num_seconds_from_midnight() as u64)
+        * 1_000_000_000
+        + datetime.nanosecond() as u64;
+    let mjd_time: f64 = nanoseconds_from_midnight as f64 / 86_400_000_000_000.0;
+
+    let mjd: f64 = mjd_date as f64 + mjd_time;
+
+    return Ok(mjd);
 }
 
 #[cfg(test)]

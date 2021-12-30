@@ -25,6 +25,7 @@ use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike};
 pub use tai2utc::tai2utc;
 pub use tt::{tai2tt, tt2tai};
 pub use tt2utc::tt2utc;
+pub use ut2mjd::ut2mjd;
 pub use utc2tai::utc2tai;
 pub use utc2tt::utc2tt;
 
