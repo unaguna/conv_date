@@ -1,11 +1,11 @@
 use crate::error::Error;
 use chrono::{Datelike, NaiveDateTime, Timelike};
 
-pub fn ut2mjd(datetime: &str, dt_fmt: &str) -> Result<f64, Error> {
+pub fn ut2mjd(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
     let mjd = ut2mjd_dt(&datetime)?;
-    Ok(mjd)
+    Ok(mjd.to_string())
 }
 
 pub fn ut2mjd_dt(datetime: &NaiveDateTime) -> Result<f64, Error> {
@@ -46,7 +46,9 @@ mod tests {
         #[case] expected_err: Option<Error>,
     ) {
         let expected = testmod::result(expected_ok, expected_err);
-        let mjd = ut2mjd(utc, DT_FMT);
+
+        // TODO: 結果を数値化せず、文字列のまま検証する。数値の検証は別途ut2mjd_dtの試験として行う。
+        let mjd = ut2mjd(utc, DT_FMT).map(|s| s.parse::<f64>().unwrap());
 
         match mjd {
             Err(_) => assert_eq!(mjd, expected),
@@ -69,7 +71,8 @@ mod tests {
     ) {
         let expected = testmod::result(expected_ok, expected_err);
 
-        let mjd = ut2mjd(utc, dt_fmt);
+        // TODO: 結果を数値化せず、文字列のまま検証する。数値の検証は別途ut2mjd_dtの試験として行う。
+        let mjd = ut2mjd(utc, dt_fmt).map(|s| s.parse::<f64>().unwrap());
 
         match mjd {
             Err(_) => assert_eq!(mjd, expected),
