@@ -9,13 +9,15 @@ pub fn ut2mjd_str(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
 }
 
 pub fn ut2mjd(datetime: &NaiveDateTime) -> Result<f64, Error> {
-    let year: i64 = datetime.year().into();
-    let month_shift: i64 = ((datetime.month() + 10) % 12).into();
+    let (year, month): (i64, i64) = match datetime.month() {
+        1 | 2 => ((datetime.year() - 1) as i64, (datetime.month() + 12) as i64),
+        _ => (datetime.year() as i64, datetime.month() as i64),
+    };
     let day: i64 = datetime.day().into();
 
     // mjd_date = [365.25 * y] + [y / 400] - [y / 100] + [30.59(m-2)] + d - 678912
     let mjd_date: i64 =
-        (1461 * year / 4) + (year / 400) - (year / 100) + (3059 * month_shift / 100) + day - 678912;
+        (1461 * year / 4) + (year / 400) - (year / 100) + (3059 * (month - 2) / 100) + day - 678912;
 
     let nanoseconds_from_midnight: u64 = (datetime.num_seconds_from_midnight() as u64)
         * 1_000_000_000
