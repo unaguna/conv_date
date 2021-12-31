@@ -13,6 +13,7 @@ pub mod execcode;
 pub use converter::{main_convertion, Converter};
 pub mod tai2utc;
 pub mod tt2utc;
+pub mod ut2mjd;
 pub mod utc2tai;
 pub mod utc2tt;
 

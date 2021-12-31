@@ -5,6 +5,7 @@
 //! - [tt2utc](../tt2utc/index.html)
 //! - [utc2tai](../utc2tai/index.html)
 //! - [utc2tt](../utc2tt/index.html)
+//! - [ut2mjd](../ut2mjd/index.html)
 //!
 //! This crate provide some features to above binary crates.
 //!
@@ -18,12 +19,14 @@ pub mod exe;
 mod tai2utc;
 mod tt;
 mod tt2utc;
+mod ut2mjd;
 mod utc2tai;
 mod utc2tt;
 use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike};
 pub use tai2utc::tai2utc;
 pub use tt::{tai2tt, tt2tai};
 pub use tt2utc::tt2utc;
+pub use ut2mjd::ut2mjd_str;
 pub use utc2tai::utc2tai;
 pub use utc2tt::utc2tt;
 
