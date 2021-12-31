@@ -5,6 +5,7 @@
 //! - [tt2utc](../tt2utc/index.html)
 //! - [utc2tai](../utc2tai/index.html)
 //! - [utc2tt](../utc2tt/index.html)
+//! - [ut2mjd](../ut2mjd/index.html)
 //!
 //! This crate provide some features to above binary crates.
 //!
