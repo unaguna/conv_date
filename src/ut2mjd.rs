@@ -1,6 +1,34 @@
 use crate::error::Error;
 use chrono::{Datelike, NaiveDateTime, Timelike};
 
+/// Convert datetime
+/// from [UT](https://en.wikipedia.org/wiki/Universal_Time)
+/// to [MJD](https://en.wikipedia.org/wiki/Julian_day#Variants).
+///
+/// This function **doesn't** take leap seconds into account.
+///
+/// # Arguments
+/// * `datetime` - Datetime in UT.
+/// * `dt_fmt` - [format](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html) of `datetime`
+///
+/// # Returns
+/// Returns the datetime in MJD.
+///
+/// Returns [`Error`](crate::error::Error) if it fail to convert.
+///
+/// # Examples
+/// ```
+/// use convdate;
+///
+/// let mjd = convdate::ut2mjd_str(
+///     "2017-01-01T12:00:00.000",
+///     "%Y-%m-%dT%H:%M:%S%.3f");
+///
+/// assert_eq!(mjd, Ok("57754.5".to_string()));
+/// ```
+///
+/// # See also
+/// * [`ut2mjd`](../ut2mjd/index.html) (Binary crate) - The executable program which do same conversion.
 pub fn ut2mjd_str(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
     let datetime = NaiveDateTime::parse_from_str(datetime, dt_fmt)
         .map_err(|_e| Error::DatetimeParseError(datetime.to_string()))?;
@@ -8,6 +36,23 @@ pub fn ut2mjd_str(datetime: &str, dt_fmt: &str) -> Result<String, Error> {
     Ok(mjd.to_string())
 }
 
+/// Convert datetime
+/// from [UT](https://en.wikipedia.org/wiki/Universal_Time)
+/// to [MJD](https://en.wikipedia.org/wiki/Julian_day#Variants).
+///
+/// This function **doesn't** take leap seconds into account.
+///
+/// # Arguments
+/// * `datetime` - Datetime in UT.
+///
+/// # Returns
+/// Returns the datetime in TAI.
+///
+/// Returns [`Error`](crate::error::Error) if it fail to convert.
+///
+/// # See also
+/// * [`ut2mjd_str`] - It is same as `ut2mjd`, except that the argument and the result are [`str`] and [`String`].
+/// * [`ut2mjd`](../ut2mjd/index.html) (Binary crate) - The executable program which do same conversion.
 pub fn ut2mjd(datetime: &NaiveDateTime) -> Result<f64, Error> {
     let (year, month): (i64, i64) = match datetime.month() {
         1 | 2 => ((datetime.year() - 1) as i64, (datetime.month() + 12) as i64),
