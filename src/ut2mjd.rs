@@ -77,6 +77,23 @@ mod tests {
     }
 
     #[rstest]
+    #[case("2021-12-26T00:00:00.000000", Some("59574"), None)]
+    #[case("2021-12-26T12:00:00.000000", Some("59574.5"), None)]
+    #[case("2021-12-26T11:06:12.000000", Some("59574.46263888889"), None)]
+    #[case("2021-12-26T00:00:00.000001", Some("59574.000000000015"), None)]
+    fn test_ut2mjd_str_output_fmt(
+        #[case] utc: &str,
+        #[case] expected_ok: Option<&str>,
+        #[case] expected_err: Option<Error>,
+    ) {
+        let expected = testmod::result(expected_ok, expected_err).map(ToString::to_string);
+
+        let mjd = ut2mjd_str(utc, "%Y-%m-%dT%H:%M:%S%.6f");
+
+        assert_eq!(mjd, expected);
+    }
+
+    #[rstest]
     #[case(
         "2021-12-26T11:06:12.000",
         "%Y-%m-%dT%H:%M:%S%.3f",
